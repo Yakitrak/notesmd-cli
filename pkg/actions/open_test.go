@@ -20,6 +20,8 @@ func TestOpenNote(t *testing.T) {
 		})
 		// Assert
 		assert.Equal(t, err, nil)
+		assert.Equal(t, "myVault", uri.LastParams["vault"])
+		assert.Equal(t, "note.md", uri.LastParams["file"])
 	})
 
 	t.Run("vault.DefaultName returns an error", func(t *testing.T) {
@@ -44,8 +46,23 @@ func TestOpenNote(t *testing.T) {
 		// Act
 		err := actions.OpenNote(&mocks.MockVaultOperator{}, &uri, actions.OpenParams{
 			NoteName: "note1.md",
+			Section:  "Heading One",
 		})
 		// Assert
 		assert.Equal(t, err, uri.ExecuteErr)
+		assert.Equal(t, "note1.md#Heading One", uri.LastParams["file"])
+	})
+
+	t.Run("Opens note with section", func(t *testing.T) {
+		vault := mocks.MockVaultOperator{Name: "myVault"}
+		uri := mocks.MockUriManager{}
+
+		err := actions.OpenNote(&vault, &uri, actions.OpenParams{
+			NoteName: "note.md",
+			Section:  "Section Name",
+		})
+
+		assert.NoError(t, err)
+		assert.Equal(t, "note.md#Section Name", uri.LastParams["file"])
 	})
 }

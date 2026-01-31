@@ -6,6 +6,7 @@ import (
 
 type OpenParams struct {
 	NoteName string
+	Section  string
 }
 
 func OpenNote(vault obsidian.VaultManager, uri obsidian.UriManager, params OpenParams) error {
@@ -14,9 +15,14 @@ func OpenNote(vault obsidian.VaultManager, uri obsidian.UriManager, params OpenP
 		return err
 	}
 
+	fileParam := params.NoteName
+	if params.Section != "" {
+		fileParam = params.NoteName + "#" + params.Section
+	}
+
 	obsidianUri := uri.Construct(ObsOpenUrl, map[string]string{
 		"vault": vaultName,
-		"file":  params.NoteName,
+		"file":  fileParam,
 	})
 
 	err = uri.Execute(obsidianUri)

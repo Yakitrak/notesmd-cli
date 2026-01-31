@@ -9,6 +9,7 @@ import (
 )
 
 var vaultName string
+var sectionName string
 var OpenVaultCmd = &cobra.Command{
 	Use:     "open",
 	Aliases: []string{"o"},
@@ -18,7 +19,7 @@ var OpenVaultCmd = &cobra.Command{
 		vault := obsidian.Vault{Name: vaultName}
 		uri := obsidian.Uri{}
 		noteName := args[0]
-		params := actions.OpenParams{NoteName: noteName}
+		params := actions.OpenParams{NoteName: noteName, Section: sectionName}
 		err := actions.OpenNote(&vault, &uri, params)
 		if err != nil {
 			log.Fatal(err)
@@ -28,5 +29,6 @@ var OpenVaultCmd = &cobra.Command{
 
 func init() {
 	OpenVaultCmd.Flags().StringVarP(&vaultName, "vault", "v", "", "vault name (not required if default is set)")
+	OpenVaultCmd.Flags().StringVarP(&sectionName, "section", "s", "", "heading text to open within the note (case-sensitive)")
 	rootCmd.AddCommand(OpenVaultCmd)
 }

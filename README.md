@@ -115,6 +115,10 @@ obsidian-cli open "{note-name}"
 # Opens note in specified obsidian vault
 obsidian-cli open "{note-name}" --vault "{vault-name}"
 
+# Opens note at a specific heading (case-sensitive)
+obsidian-cli open "{note-name}" --section "{heading-text}"
+
+obsidian-cli open "{note-name}" --vault "{vault-name}" --section "{heading-text}"
 ```
 
 ### Daily Note
