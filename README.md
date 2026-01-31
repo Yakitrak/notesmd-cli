@@ -7,7 +7,7 @@
 ## Description
 
 Obsidian is a powerful and extensible knowledge base application
-that works on top of your local folder of plain text notes. This CLI tool (written in Go) will let you interact with the application using the terminal. You are currently able to open, search, move, create, update and delete notes.
+that works on top of your local folder of plain text notes. This CLI tool (written in Go) will let you interact with the application using the terminal. You are currently able to open, search, list, move, create, update and delete notes.
 
 ---
 
@@ -159,6 +159,22 @@ obsidian-cli search-content "search term" --vault "{vault-name}"
 
 # Searches and opens selected note in your default editor
 obsidian-cli search-content "search term" --editor
+
+```
+
+### List Vault Contents
+
+Lists files and folders in a vault path. If no path is provided, it lists the vault root.
+
+```bash
+# Lists vault root
+obsidian-cli list
+
+# Lists contents of a subfolder in default vault
+obsidian-cli list "001 Notes"
+
+# Lists contents of a subfolder in specified vault
+obsidian-cli list "001 Notes" --vault "{vault-name}"
 
 ```
 
