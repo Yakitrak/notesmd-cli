@@ -1,5 +1,7 @@
 package obsidian
 
+import "strings"
+
 const (
 	ExecuteUriError                    = "Failed to execute Obsidian URI"
 	NoteDoesNotExistError              = "Cannot find note in vault"
@@ -15,3 +17,8 @@ const (
 	ObsidianConfigParseError           = "Failed to parse Obsidian config file. Please ensure vault has been set up in Obsidian."
 	ObsidianConfigVaultNotFoundError   = "Vault not found in Obsidian config file. Please ensure vault has been set up in Obsidian."
 )
+
+// IsMultipleVaultsWarning checks if an error is a warning about multiple vaults with the same name
+func IsMultipleVaultsWarning(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "multiple vaults found")
+}

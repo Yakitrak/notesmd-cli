@@ -23,6 +23,14 @@ func CreateNote(vault obsidian.VaultManager, uri obsidian.UriManager, params Cre
 		return err
 	}
 
+	// Get vault info to use ID if available
+	vaultInfo, err := vault.GetVaultInfo()
+	vaultIdentifier := vaultName
+	if err == nil && vaultInfo.ID != "" {
+		// Use vault ID for more reliable vault resolution
+		vaultIdentifier = vaultInfo.ID
+	}
+
 	normalizedContent := NormalizeContent(params.Content)
 
 	if params.UseEditor && params.ShouldOpen {
@@ -32,7 +40,7 @@ func CreateNote(vault obsidian.VaultManager, uri obsidian.UriManager, params Cre
 		}
 		// Create note via Obsidian URI to respect append/overwrite flags
 		obsidianUri := uri.Construct(ObsCreateUrl, map[string]string{
-			"vault":     vaultName,
+			"vault":     vaultIdentifier,
 			"append":    strconv.FormatBool(params.ShouldAppend),
 			"overwrite": strconv.FormatBool(params.ShouldOverwrite),
 			"content":   normalizedContent,
@@ -57,7 +65,7 @@ func CreateNote(vault obsidian.VaultManager, uri obsidian.UriManager, params Cre
 	}
 
 	obsidianUri := uri.Construct(ObsCreateUrl, map[string]string{
-		"vault":     vaultName,
+		"vault":     vaultIdentifier,
 		"append":    strconv.FormatBool(params.ShouldAppend),
 		"overwrite": strconv.FormatBool(params.ShouldOverwrite),
 		"content":   normalizedContent,

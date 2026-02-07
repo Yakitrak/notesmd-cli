@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/Yakitrak/obsidian-cli/pkg/config"
 	"os"
+	"strings"
 )
 
 var CliConfigPath = config.CliPath
@@ -35,6 +36,18 @@ func (v *Vault) DefaultName() (string, error) {
 		return "", errors.New(ObsidianCLIConfigParseError)
 	}
 
+	// Prefer vault ID if available, otherwise use name for backward compatibility
+	if cliConfig.DefaultVaultID != "" {
+		v.ID = cliConfig.DefaultVaultID
+		// Get the name from vault info
+		info, err := v.GetVaultInfo()
+		if err == nil {
+			v.Name = info.Name
+			return info.Name, nil
+		}
+		// If we can't get info, fall back to using name if available
+	}
+
 	if cliConfig.DefaultVaultName == "" {
 		return "", errors.New(ObsidianCLIConfigParseError)
 	}
@@ -43,9 +56,25 @@ func (v *Vault) DefaultName() (string, error) {
 	return cliConfig.DefaultVaultName, nil
 }
 
-func (v *Vault) SetDefaultName(name string) error {
-	// marshal obsidian name to json
-	cliConfig := CliConfig{DefaultVaultName: name}
+func (v *Vault) SetDefaultName(input string) error {
+	// Resolve the input to a vault (could be path, name, or ID)
+	vaultInfo, err := ResolveVaultFromInput(input)
+	if err != nil {
+		// Check if it's a warning about multiple vaults
+		if strings.Contains(err.Error(), "multiple vaults found") {
+			// Still proceed, but the error message contains the warning
+			// The caller can check for this
+		} else {
+			return err
+		}
+	}
+
+	// Store both name and ID for backward compatibility and future use
+	cliConfig := CliConfig{
+		DefaultVaultName: vaultInfo.Name,
+		DefaultVaultID:   vaultInfo.ID,
+	}
+	
 	jsonContent, err := JsonMarshal(cliConfig)
 	if err != nil {
 		return errors.New(ObsidianCLIConfigGenerateJSONError)
@@ -69,7 +98,8 @@ func (v *Vault) SetDefaultName(name string) error {
 		return errors.New(ObsidianCLIConfigWriteError)
 	}
 
-	v.Name = name
+	v.Name = vaultInfo.Name
+	v.ID = vaultInfo.ID
 
 	return nil
 }

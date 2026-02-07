@@ -98,9 +98,13 @@ func TestVaultDefaultName(t *testing.T) {
 }
 
 func TestVaultSetDefaultName(t *testing.T) {
-	// Temporarily override the CliConfigPath function
+	// Temporarily override the CliConfigPath and ObsidianConfigFile functions
 	originalCliConfigPath := obsidian.CliConfigPath
-	defer func() { obsidian.CliConfigPath = originalCliConfigPath }()
+	originalObsidianConfigFile := obsidian.ObsidianConfigFile
+	defer func() {
+		obsidian.CliConfigPath = originalCliConfigPath
+		obsidian.ObsidianConfigFile = originalObsidianConfigFile
+	}()
 
 	t.Run("Default vault name successfully set without errors", func(t *testing.T) {
 		// Arrange
@@ -108,25 +112,58 @@ func TestVaultSetDefaultName(t *testing.T) {
 		obsidian.CliConfigPath = func() (string, string, error) {
 			return mockCliConfigDir, mockCliConfigFile, nil
 		}
+		
+		// Create mock Obsidian config with a vault
+		mockObsidianConfigFile := mocks.CreateMockObsidianConfigFile(t)
+		obsidian.ObsidianConfigFile = func() (string, error) {
+			return mockObsidianConfigFile, nil
+		}
+		obsidianConfig := `{
+			"vaults": {
+				"abc123": {
+					"path": "/path/to/vault-name"
+				}
+			}
+		}`
+		err := os.WriteFile(mockObsidianConfigFile, []byte(obsidianConfig), 0644)
+		if err != nil {
+			t.Fatalf("Failed to create obsidian.json file: %v", err)
+		}
+
 		vault := obsidian.Vault{}
 		// Act
-		err := vault.SetDefaultName("vault-name")
+		err = vault.SetDefaultName("vault-name")
 
 		// Assert
 		assert.Equal(t, nil, err)
 		content, err := os.ReadFile(mockCliConfigFile)
 		assert.Equal(t, nil, err)
-		assert.Equal(t, `{"default_vault_name":"vault-name"}`, string(content))
+		// The config should now include both name and ID
+		assert.Contains(t, string(content), `"default_vault_name":"vault-name"`)
+		assert.Contains(t, string(content), `"default_vault_id":"abc123"`)
 	})
 
 	t.Run("Error in config.CliPath", func(t *testing.T) {
 		// Arrange
+		mockObsidianConfigFile := mocks.CreateMockObsidianConfigFile(t)
+		obsidian.ObsidianConfigFile = func() (string, error) {
+			return mockObsidianConfigFile, nil
+		}
+		obsidianConfig := `{
+			"vaults": {
+				"abc123": {
+					"path": "/path/to/vault-name"
+				}
+			}
+		}`
+		err := os.WriteFile(mockObsidianConfigFile, []byte(obsidianConfig), 0644)
+		
 		obsidian.CliConfigPath = func() (string, string, error) {
 			return "", "", os.ErrNotExist
 		}
 		vault := obsidian.Vault{}
 		// Act
-		err := vault.SetDefaultName("vault-name")
+		err = vault.SetDefaultName("vault-name")
 		// Assert
 		assert.Equal(t, os.ErrNotExist, err)
 	})
@@ -135,36 +172,76 @@ func TestVaultSetDefaultName(t *testing.T) {
 		// Temporarily override the JsonMarshal function
 		originalJsonMarshal := obsidian.JsonMarshal
 		defer func() { obsidian.JsonMarshal = originalJsonMarshal }()
+		
+		mockObsidianConfigFile := mocks.CreateMockObsidianConfigFile(t)
+		obsidian.ObsidianConfigFile = func() (string, error) {
+			return mockObsidianConfigFile, nil
+		}
+		obsidianConfig := `{
+			"vaults": {
+				"abc123": {
+					"path": "/path/to/invalid-json"
+				}
+			}
+		}`
+		err := os.WriteFile(mockObsidianConfigFile, []byte(obsidianConfig), 0644)
+		
 		obsidian.JsonMarshal = func(v interface{}) ([]byte, error) {
 			return nil, errors.New("json marshal error")
 		}
 		// Arrange
 		vault := obsidian.Vault{}
 		// Act
-		err := vault.SetDefaultName("invalid json")
+		err = vault.SetDefaultName("invalid-json")
 		// Assert
 		assert.Equal(t, err.Error(), obsidian.ObsidianCLIConfigGenerateJSONError)
 	})
 
 	t.Run("Error in creating default vault config directory", func(t *testing.T) {
 		// Arrange
+		mockObsidianConfigFile := mocks.CreateMockObsidianConfigFile(t)
+		obsidian.ObsidianConfigFile = func() (string, error) {
+			return mockObsidianConfigFile, nil
+		}
+		obsidianConfig := `{
+			"vaults": {
+				"abc123": {
+					"path": "/path/to/vault-name"
+				}
+			}
+		}`
+		err := os.WriteFile(mockObsidianConfigFile, []byte(obsidianConfig), 0644)
+		
 		obsidian.CliConfigPath = func() (string, string, error) {
 			return "", "" + "/preferences.json", nil
 		}
 		vault := obsidian.Vault{}
 		// Act
-		err := vault.SetDefaultName("vault-name")
+		err = vault.SetDefaultName("vault-name")
 		// Assert
 		assert.Equal(t, err.Error(), obsidian.ObsidianCLIConfigDirWriteEror)
 	})
 
 	t.Run("Error in writing to default vault config file", func(t *testing.T) {
 		// Arrange
+		mockObsidianConfigFile := mocks.CreateMockObsidianConfigFile(t)
+		obsidian.ObsidianConfigFile = func() (string, error) {
+			return mockObsidianConfigFile, nil
+		}
+		obsidianConfig := `{
+			"vaults": {
+				"abc123": {
+					"path": "/path/to/vault-name"
+				}
+			}
+		}`
+		err := os.WriteFile(mockObsidianConfigFile, []byte(obsidianConfig), 0644)
+		
 		mockCliConfigDir, _ := mocks.CreateMockCliConfigDirectories(t)
 		obsidian.CliConfigPath = func() (string, string, error) {
 			return mockCliConfigDir + "/unwrittable", mockCliConfigDir + "unwrittable/preferences.json", nil
 		}
-		err := os.Mkdir(mockCliConfigDir+"/unwrittable", 0444)
+		err = os.Mkdir(mockCliConfigDir+"/unwrittable", 0444)
 		vault := obsidian.Vault{}
 		// Act
 		err = vault.SetDefaultName("vault-name")

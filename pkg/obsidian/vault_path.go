@@ -11,6 +11,16 @@ import (
 var ObsidianConfigFile = config.ObsidianFile
 
 func (v *Vault) Path() (string, error) {
+	// If we have an ID, use it directly for lookup
+	if v.ID != "" {
+		info, err := v.GetVaultInfo()
+		if err != nil {
+			return "", err
+		}
+		return info.Path, nil
+	}
+
+	// Fallback to name-based lookup for backward compatibility
 	obsidianConfigFile, err := ObsidianConfigFile()
 	if err != nil {
 		return "", err

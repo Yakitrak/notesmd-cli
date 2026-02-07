@@ -15,13 +15,21 @@ func OpenNote(vault obsidian.VaultManager, uri obsidian.UriManager, params OpenP
 		return err
 	}
 
+	// Get vault info to use ID if available
+	vaultInfo, err := vault.GetVaultInfo()
+	vaultIdentifier := vaultName
+	if err == nil && vaultInfo.ID != "" {
+		// Use vault ID for more reliable vault resolution
+		vaultIdentifier = vaultInfo.ID
+	}
+
 	fileParam := params.NoteName
 	if params.Section != "" {
 		fileParam = params.NoteName + "#" + params.Section
 	}
 
 	obsidianUri := uri.Construct(ObsOpenUrl, map[string]string{
-		"vault": vaultName,
+		"vault": vaultIdentifier,
 		"file":  fileParam,
 	})
 
