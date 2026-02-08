@@ -191,4 +191,52 @@ func TestConfigObsidianPath(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, nativeConfigFile, obsConfigFile)
 	})
+
+	t.Run("Finds WSL Install Location", func(t *testing.T) {
+		if runtime.GOOS != "linux" {
+			t.Skip("WSL test only runs on Linux")
+		}
+
+		// Mock variables
+		originalUserConfigDir := config.UserConfigDirectory
+		originalExecCommand := config.ExecCommand
+		originalWslInteropFile := config.WslInteropFile
+		defer func() {
+			config.UserConfigDirectory = originalUserConfigDir
+			config.ExecCommand = originalExecCommand
+			config.WslInteropFile = originalWslInteropFile
+		}()
+
+		tempDir := t.TempDir()
+
+		// Create WSL interop file to simulate WSL environment
+		wslPresenceDir := filepath.Join(tempDir, "proc", "sys", "fs", "binfmt_misc")
+		err := os.MkdirAll(wslPresenceDir, 0755)
+		assert.NoError(t, err)
+
+		wslPresenceFile := filepath.Join(wslPresenceDir, "WSLInterop")
+		config.WslInteropFile = wslPresenceFile
+		err = os.WriteFile(wslPresenceFile, []byte{}, 0644)
+		assert.NoError(t, err)
+
+		// Mock ExecCommand
+		config.ExecCommand = func(name string, arg ...string) ([]byte, error) {
+			return []byte("C:\\Users\\user\\AppData\\Roaming\r\n"), nil
+		}
+
+		// Setup environment
+		origHome := os.Getenv("HOME")
+		defer os.Setenv("HOME", origHome)
+		os.Setenv("HOME", tempDir)
+
+		config.UserConfigDirectory = func() (string, error) {
+			return filepath.Join(tempDir, ".config"), nil
+		}
+
+		expectedPath := "/mnt/c/Users/user/AppData/Roaming/obsidian/obsidian.json"
+
+		obsConfigFile, err := config.ObsidianFile()
+		assert.NoError(t, err)
+		assert.Equal(t, expectedPath, obsConfigFile)
+	})
 }
