@@ -28,7 +28,7 @@ func ObsidianFile() (obsidianConfigFile string, err error) {
 				filepath.Join(homeDir, "snap", "obsidian", "current", ".config", "obsidian", ObsidianConfigFile))
 		}
 	default:
-		candidatePaths = append(candidatePaths, defaultPath)
+		return defaultPath, nil
 	}
 
 	var firstNonExistErr error
