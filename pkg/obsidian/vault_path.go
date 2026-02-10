@@ -34,6 +34,11 @@ func (v *Vault) Path() (string, error) {
 }
 
 func adjustForWslMount(dir string) string {
+	// Don't do adjustment if the path is actually linux native (although this only works for C: drive)
+	if (!strings.HasPrefix(dir, "C:")) {
+		return dir
+	}
+
 	mnted := strings.ReplaceAll(dir, "C:", "/mnt/c")
 	return strings.ReplaceAll(mnted, "\\", "/")
 }
