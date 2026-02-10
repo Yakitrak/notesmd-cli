@@ -9,6 +9,7 @@ import (
 )
 
 var ObsidianConfigFile = config.ObsidianFile
+var RunningInWSL = config.RunningInWSL
 
 func (v *Vault) Path() (string, error) {
 	obsidianConfigFile, err := ObsidianConfigFile()
@@ -17,20 +18,34 @@ func (v *Vault) Path() (string, error) {
 	}
 
 	content, err := os.ReadFile(obsidianConfigFile)
-
 	if err != nil {
 		return "", errors.New(ObsidianConfigReadError)
 	}
 
-	vaultsContent := ObsidianVaultConfig{}
-	err = json.Unmarshal(content, &vaultsContent)
-
+	path, err := getPathForVault(content, v.Name)
 	if err != nil {
+		return "", err
+	}
+
+	if RunningInWSL() {
+		return adjustForWslMount(path), nil
+	}
+	return path, nil
+}
+
+func adjustForWslMount(dir string) string {
+	mnted := strings.ReplaceAll(dir, "C:", "/mnt/c")
+	return strings.ReplaceAll(mnted, "\\", "/")
+}
+
+func getPathForVault(content []byte, name string) (string, error) {
+	vaultsContent := ObsidianVaultConfig{}
+	if json.Unmarshal(content, &vaultsContent) != nil {
 		return "", errors.New(ObsidianConfigParseError)
 	}
 
 	for _, element := range vaultsContent.Vaults {
-		if strings.HasSuffix(element.Path, v.Name) {
+		if strings.HasSuffix(element.Path, name) {
 			return element.Path, nil
 		}
 	}
