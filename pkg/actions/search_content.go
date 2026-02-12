@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/Yakitrak/obsidian-cli/pkg/obsidian"
+	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 )
 
 func SearchNotesContent(vault obsidian.VaultManager, note obsidian.NoteManager, uri obsidian.UriManager, fuzzyFinder obsidian.FuzzyFinderManager, searchTerm string, useEditor bool) error {

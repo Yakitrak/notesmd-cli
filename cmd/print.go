@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/Yakitrak/obsidian-cli/pkg/actions"
-	"github.com/Yakitrak/obsidian-cli/pkg/obsidian"
+	"github.com/Yakitrak/notesmd-cli/pkg/actions"
+	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 	"log"
 
 	"github.com/spf13/cobra"

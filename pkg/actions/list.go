@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"github.com/Yakitrak/obsidian-cli/pkg/obsidian"
+	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 )
 
 type ListParams struct {

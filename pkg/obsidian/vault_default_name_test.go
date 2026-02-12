@@ -2,8 +2,8 @@ package obsidian_test
 
 import (
 	"errors"
-	"github.com/Yakitrak/obsidian-cli/mocks"
-	"github.com/Yakitrak/obsidian-cli/pkg/obsidian"
+	"github.com/Yakitrak/notesmd-cli/mocks"
+	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"

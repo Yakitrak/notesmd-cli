@@ -2,7 +2,7 @@ package config_test
 
 import (
 	"errors"
-	"github.com/Yakitrak/obsidian-cli/pkg/config"
+	"github.com/Yakitrak/notesmd-cli/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -20,8 +20,8 @@ func TestConfigCliPath(t *testing.T) {
 		obsConfigDir, obsConfigFile, err := config.CliPath()
 		// Assert
 		assert.Equal(t, nil, err)
-		assert.Equal(t, "user/config/dir/obsidian-cli", obsConfigDir)
-		assert.Equal(t, "user/config/dir/obsidian-cli/preferences.json", obsConfigFile)
+		assert.Equal(t, "user/config/dir/notesmd-cli", obsConfigDir)
+		assert.Equal(t, "user/config/dir/notesmd-cli/preferences.json", obsConfigFile)
 	})
 
 	t.Run("UserConfigDir func returns an error", func(t *testing.T) {

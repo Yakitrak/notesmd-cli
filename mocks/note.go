@@ -1,6 +1,6 @@
 package mocks
 
-import "github.com/Yakitrak/obsidian-cli/pkg/obsidian"
+import "github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 
 type MockNoteManager struct {
 	DeleteErr          error

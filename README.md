@@ -1,8 +1,10 @@
-# Obsidian CLI
+# NotesMD CLI
+
+> **Note**: With the release of the official Obsidian CLI., this project has been renamed from "Obsidian CLI" to "NotesMD CLI" to avoid confusion. NotesMD CLI works **without requiring Obsidian to be running**, making it perfect for scripting, automation, and terminal-only environments.
 
 ---
 
-## ![obsidian-cli Usage](./docs/usage.png)
+## ![notesmd-cli Usage](./docs/usage.png)
 
 ## Description
 
@@ -22,7 +24,7 @@ scoop bucket add scoop-yakitrak https://github.com/yakitrak/scoop-yakitrak.git
 ```
 
 ```
-scoop install obsidian-cli
+scoop install notesmd-cli
 ```
 
 ### Mac and Linux
@@ -34,8 +36,12 @@ brew tap yakitrak/yakitrak
 ```
 
 ```Bash
-brew install yakitrak/yakitrak/obsidian-cli
+brew install yakitrak/yakitrak/notesmd-cli
 ```
+
+## Migrating from Obsidian CLI
+
+**Upgrading from `obsidian-cli` v0.2.3 or earlier?** See the detailed [Migration Guide](MIGRATION.md) for step-by-step instructions on uninstalling the old version, installing Vault CLI, and migrating your configuration.
 
 ## Usage
 
@@ -43,7 +49,7 @@ brew install yakitrak/yakitrak/obsidian-cli
 
 ```bash
 # See All command instructions
-obsidian-cli --help
+notesmd-cli --help
 ```
 
 ### Editor Flag
@@ -65,10 +71,10 @@ The editor is determined by the `EDITOR` environment variable. If not set, it de
 export EDITOR="code"  # or "vim", "nano", "subl", etc.
 
 # Use with supported commands
-obsidian-cli search --editor
-obsidian-cli search-content "term" --editor
-obsidian-cli create "note.md" --open --editor
-obsidian-cli move "old.md" "new.md" --open --editor
+notesmd-cli search --editor
+notesmd-cli search-content "term" --editor
+notesmd-cli create "note.md" --open --editor
+notesmd-cli move "old.md" "new.md" --open --editor
 ```
 
 ### Set Default Vault
@@ -76,10 +82,10 @@ obsidian-cli move "old.md" "new.md" --open --editor
 Defines default vault for future usage. If not set, pass `--vault` flag for other commands. You don't provide the path to vault here, just the name.
 
 ```bash
-obsidian-cli set-default "{vault-name}"
+notesmd-cli set-default "{vault-name}"
 ```
 
-Note: `open` and other commands in `obsidian-cli` use this vault's base directory as the working directory, not the current working directory of your terminal.
+Note: `open` and other commands in `notesmd-cli` use this vault's base directory as the working directory, not the current working directory of your terminal.
 
 ### Print Default Vault
 
@@ -87,17 +93,17 @@ Prints default vault and path. Please set this with `set-default` command if not
 
 ```bash
 # print the default vault name and path
-obsidian-cli print-default
+notesmd-cli print-default
 
 # print only the vault path
-obsidian-cli print-default --path-only
+notesmd-cli print-default --path-only
 ```
 
 You can add this to your shell configuration file (like `~/.zshrc`) to quickly navigate to the default vault:
 
 ```bash
 obs_cd() {
-    local result=$(obsidian-cli print-default --path-only)
+    local result=$(notesmd-cli print-default --path-only)
     [ -n "$result" ] && cd -- "$result"
 }
 ```
@@ -110,15 +116,15 @@ Open given note name in Obsidian. Note can also be an absolute path from top lev
 
 ```bash
 # Opens note in obsidian vault
-obsidian-cli open "{note-name}"
+notesmd-cli open "{note-name}"
 
 # Opens note in specified obsidian vault
-obsidian-cli open "{note-name}" --vault "{vault-name}"
+notesmd-cli open "{note-name}" --vault "{vault-name}"
 
 # Opens note at a specific heading (case-sensitive)
-obsidian-cli open "{note-name}" --section "{heading-text}"
+notesmd-cli open "{note-name}" --section "{heading-text}"
 
-obsidian-cli open "{note-name}" --vault "{vault-name}" --section "{heading-text}"
+notesmd-cli open "{note-name}" --vault "{vault-name}" --section "{heading-text}"
 ```
 
 ### Daily Note
@@ -127,10 +133,10 @@ Open daily note in Obsidian. It will create one (using template) if one does not
 
 ```bash
 # Creates / opens daily note in obsidian vault
-obsidian-cli daily
+notesmd-cli daily
 
 # Creates / opens daily note in specified obsidian vault
-obsidian-cli daily --vault "{vault-name}"
+notesmd-cli daily --vault "{vault-name}"
 
 ```
 
@@ -140,13 +146,13 @@ Starts a fuzzy search displaying notes in the terminal from the vault. You can h
 
 ```bash
 # Searches in default obsidian vault
-obsidian-cli search
+notesmd-cli search
 
 # Searches in specified obsidian vault
-obsidian-cli search --vault "{vault-name}"
+notesmd-cli search --vault "{vault-name}"
 
 # Searches and opens selected note in your default editor
-obsidian-cli search --editor
+notesmd-cli search --editor
 
 ```
 
@@ -156,13 +162,13 @@ Searches for notes containing search term in the content of notes. It will displ
 
 ```bash
 # Searches for content in default obsidian vault
-obsidian-cli search-content "search term"
+notesmd-cli search-content "search term"
 
 # Searches for content in specified obsidian vault
-obsidian-cli search-content "search term" --vault "{vault-name}"
+notesmd-cli search-content "search term" --vault "{vault-name}"
 
 # Searches and opens selected note in your default editor
-obsidian-cli search-content "search term" --editor
+notesmd-cli search-content "search term" --editor
 
 ```
 
@@ -172,13 +178,13 @@ Lists files and folders in a vault path. If no path is provided, it lists the va
 
 ```bash
 # Lists vault root
-obsidian-cli list
+notesmd-cli list
 
 # Lists contents of a subfolder in default vault
-obsidian-cli list "001 Notes"
+notesmd-cli list "001 Notes"
 
 # Lists contents of a subfolder in specified vault
-obsidian-cli list "001 Notes" --vault "{vault-name}"
+notesmd-cli list "001 Notes" --vault "{vault-name}"
 
 ```
 
@@ -188,13 +194,13 @@ Prints the contents of given note name or path in Obsidian.
 
 ```bash
 # Prints note in default vault
-obsidian-cli print "{note-name}"
+notesmd-cli print "{note-name}"
 
 # Prints note by path in default vault
-obsidian-cli print "{note-path}"
+notesmd-cli print "{note-path}"
 
 # Prints note in specified obsidian
-obsidian-cli print "{note-name}" --vault "{vault-name}"
+notesmd-cli print "{note-name}" --vault "{vault-name}"
 
 ```
 
@@ -204,25 +210,25 @@ Creates note (can also be a path with name) in vault. By default, if the note ex
 
 ```bash
 # Creates empty note in default obsidian and opens it
-obsidian-cli create "{note-name}"
+notesmd-cli create "{note-name}"
 
 # Creates empty note in given obsidian and opens it
-obsidian-cli create "{note-name}"  --vault "{vault-name}"
+notesmd-cli create "{note-name}"  --vault "{vault-name}"
 
 # Creates note in default obsidian with content
-obsidian-cli create "{note-name}" --content "abcde"
+notesmd-cli create "{note-name}" --content "abcde"
 
 # Creates note in default obsidian with content - overwrite existing note
-obsidian-cli create "{note-name}" --content "abcde" --overwrite
+notesmd-cli create "{note-name}" --content "abcde" --overwrite
 
 # Creates note in default obsidian with content - append existing note
-obsidian-cli create "{note-name}" --content "abcde" --append
+notesmd-cli create "{note-name}" --content "abcde" --append
 
 # Creates note and opens it
-obsidian-cli create "{note-name}" --content "abcde" --open
+notesmd-cli create "{note-name}" --content "abcde" --open
 
 # Creates note and opens it in your default editor
-obsidian-cli create "{note-name}" --content "abcde" --open --editor
+notesmd-cli create "{note-name}" --content "abcde" --open --editor
 
 ```
 
@@ -232,16 +238,16 @@ Moves a given note(path from top level of vault) with new name given (top level 
 
 ```bash
 # Renames a note in default obsidian
-obsidian-cli move "{current-note-path}" "{new-note-path}"
+notesmd-cli move "{current-note-path}" "{new-note-path}"
 
 # Renames a note and given obsidian
-obsidian-cli move "{current-note-path}" "{new-note-path}" --vault "{vault-name}"
+notesmd-cli move "{current-note-path}" "{new-note-path}" --vault "{vault-name}"
 
 # Renames a note in default obsidian and opens it
-obsidian-cli move "{current-note-path}" "{new-note-path}" --open
+notesmd-cli move "{current-note-path}" "{new-note-path}" --open
 
 # Renames a note and opens it in your default editor
-obsidian-cli move "{current-note-path}" "{new-note-path}" --open --editor
+notesmd-cli move "{current-note-path}" "{new-note-path}" --open --editor
 ```
 
 ### Delete Note
@@ -250,10 +256,10 @@ Deletes a given note (path from top level of vault).
 
 ```bash
 # Renames a note in default obsidian
-obsidian-cli delete "{note-path}"
+notesmd-cli delete "{note-path}"
 
 # Renames a note in given obsidian
-obsidian-cli delete "{note-path}" --vault "{vault-name}"
+notesmd-cli delete "{note-path}" --vault "{vault-name}"
 ```
 
 ### Frontmatter
@@ -262,21 +268,21 @@ View and modify YAML frontmatter in notes. Alias: `fm`
 
 ```bash
 # Print frontmatter of a note
-obsidian-cli frontmatter "{note-name}" --print
+notesmd-cli frontmatter "{note-name}" --print
 
 # Edit a frontmatter field (creates field if it doesn't exist)
-obsidian-cli frontmatter "{note-name}" --edit --key "status" --value "done"
+notesmd-cli frontmatter "{note-name}" --edit --key "status" --value "done"
 
 # Delete a frontmatter field
-obsidian-cli frontmatter "{note-name}" --delete --key "draft"
+notesmd-cli frontmatter "{note-name}" --delete --key "draft"
 
 # Use with a specific vault
-obsidian-cli frontmatter "{note-name}" --print --vault "{vault-name}"
+notesmd-cli frontmatter "{note-name}" --print --vault "{vault-name}"
 ```
 
 ## Contribution
 
-Fork the project, add your feature or fix and submit a pull request. You can also open an [issue](https://github.com/yakitrak/obsidian-cli/issues/new/choose) to report a bug or request a feature.
+Fork the project, add your feature or fix and submit a pull request. You can also open an [issue](https://github.com/yakitrak/notesmd-cli/issues/new/choose) to report a bug or request a feature.
 
 ## License
 
