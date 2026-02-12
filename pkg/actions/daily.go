@@ -1,7 +1,7 @@
 package actions
 
 import (
-	"github.com/Yakitrak/obsidian-cli/pkg/obsidian"
+	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 )
 
 func DailyNote(vault obsidian.VaultManager, uri obsidian.UriManager) error {

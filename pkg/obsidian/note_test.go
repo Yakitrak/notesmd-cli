@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Yakitrak/obsidian-cli/pkg/obsidian"
+	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 	"github.com/stretchr/testify/assert"
 )
 

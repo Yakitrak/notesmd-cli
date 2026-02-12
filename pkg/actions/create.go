@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Yakitrak/obsidian-cli/pkg/obsidian"
+	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 )
 
 type CreateParams struct {

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Yakitrak/obsidian-cli/pkg/frontmatter"
-	"github.com/Yakitrak/obsidian-cli/pkg/obsidian"
+	"github.com/Yakitrak/notesmd-cli/pkg/frontmatter"
+	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 )
 
 type FrontmatterParams struct {

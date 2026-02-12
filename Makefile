@@ -1,4 +1,4 @@
-BINARY_NAME=obsidian-cli
+BINARY_NAME=notesmd-cli
 
 build-all:
 	GOOS=darwin GOARCH=amd64 go build -o bin/darwin/${BINARY_NAME}

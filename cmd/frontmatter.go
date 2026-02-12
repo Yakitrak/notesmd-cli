@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Yakitrak/obsidian-cli/pkg/actions"
-	"github.com/Yakitrak/obsidian-cli/pkg/obsidian"
+	"github.com/Yakitrak/notesmd-cli/pkg/actions"
+	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 	"github.com/spf13/cobra"
 )
 
@@ -25,9 +25,9 @@ Use --print to display frontmatter, --edit to modify a key,
 or --delete to remove a key.
 
 Examples:
-  obsidian-cli frontmatter "My Note" --print
-  obsidian-cli frontmatter "My Note" --edit --key "status" --value "done"
-  obsidian-cli frontmatter "My Note" --delete --key "draft"`,
+  notesmd-cli frontmatter "My Note" --print
+  notesmd-cli frontmatter "My Note" --edit --key "status" --value "done"
+  notesmd-cli frontmatter "My Note" --delete --key "draft"`,
 	Args: cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		noteName := args[0]

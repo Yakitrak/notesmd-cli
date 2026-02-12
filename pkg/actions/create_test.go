@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Yakitrak/obsidian-cli/mocks"
-	"github.com/Yakitrak/obsidian-cli/pkg/actions"
+	"github.com/Yakitrak/notesmd-cli/mocks"
+	"github.com/Yakitrak/notesmd-cli/pkg/actions"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -13,7 +13,7 @@ func CliPath() (cliConfigDir string, cliConfigFile string, err error) {
 	if err != nil {
 		return "", "", errors.New(UserConfigDirectoryNotFoundErrorMessage)
 	}
-	cliConfigDir = filepath.Join(userConfigDir, ObsidianCLIConfigDirectory)
-	cliConfigFile = filepath.Join(cliConfigDir, ObsidianCLIConfigFile)
+	cliConfigDir = filepath.Join(userConfigDir, NotesMDCLIConfigDirectory)
+	cliConfigFile = filepath.Join(cliConfigDir, NotesMDCLIConfigFile)
 	return cliConfigDir, cliConfigFile, nil
 }

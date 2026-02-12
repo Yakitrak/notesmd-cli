@@ -2,7 +2,7 @@ package config_test
 
 import (
 	"errors"
-	"github.com/Yakitrak/obsidian-cli/pkg/config"
+	"github.com/Yakitrak/notesmd-cli/pkg/config"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"path/filepath"

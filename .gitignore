@@ -5,7 +5,7 @@
 *.so
 *.dylib
 .vscode
-obsidian-cli
+notesmd-cli
 
 # Test binary, built with `go test -c`
 *.test
