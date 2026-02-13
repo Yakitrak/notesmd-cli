@@ -34,13 +34,14 @@ func (v *Vault) Path() (string, error) {
 }
 
 func adjustForWslMount(dir string) string {
-	// Don't do adjustment if the path is actually linux native (although this only works for C: drive)
-	if (!strings.HasPrefix(dir, "C:")) {
-		return dir
+	// Detect any Windows drive letter pattern (e.g. C:, D:, E:)
+	if len(dir) >= 2 && dir[1] == ':' && ((dir[0] >= 'A' && dir[0] <= 'Z') || (dir[0] >= 'a' && dir[0] <= 'z')) {
+		driveLetter := strings.ToLower(string(dir[0]))
+		mnted := "/mnt/" + driveLetter + dir[2:]
+		return strings.ReplaceAll(mnted, "\\", "/")
 	}
 
-	mnted := strings.ReplaceAll(dir, "C:", "/mnt/c")
-	return strings.ReplaceAll(mnted, "\\", "/")
+	return dir
 }
 
 func getPathForVault(content []byte, name string) (string, error) {
