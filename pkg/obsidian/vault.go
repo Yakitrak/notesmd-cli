@@ -15,6 +15,7 @@ type VaultManager interface {
 	DefaultName() (string, error)
 	SetDefaultName(name string) error
 	Path() (string, error)
+	DefaultOpenType() (string, error)
 }
 
 type Vault struct {

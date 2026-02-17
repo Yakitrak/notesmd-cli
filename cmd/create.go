@@ -26,8 +26,8 @@ var createNoteCmd = &cobra.Command{
 			log.Fatalf("Failed to parse --editor flag: %v", err)
 		}
 
-		// If --editor was not explicitly set, fall back to the configured default open type.
-		if !useEditor {
+		// If --editor was not explicitly passed, fall back to the configured default open type.
+		if !cmd.Flags().Changed("editor") {
 			defaultOpenType, configErr := vault.DefaultOpenType()
 			if configErr == nil && defaultOpenType == "editor" {
 				useEditor = true
