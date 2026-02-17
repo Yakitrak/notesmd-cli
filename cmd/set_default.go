@@ -19,13 +19,15 @@ var setDefaultCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
+		fmt.Println("Default vault set to: ", name)
 		path, err := v.Path()
 		if err != nil {
-			log.Fatal(err)
+			// Path resolution is best-effort: the name is saved; Obsidian's
+			// config file may not be present or may not contain this vault yet.
+			log.Printf("Note: could not resolve vault path (%v)", err)
+			return
 		}
-		fmt.Println("Default vault set to: ", name)
 		fmt.Println("Default vault path set to: ", path)
-
 	},
 }
 
