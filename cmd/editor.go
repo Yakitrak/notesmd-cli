@@ -10,7 +10,7 @@ import (
 // resolveUseEditor returns whether the command should open in the user's editor.
 // If --editor was explicitly passed, its value is used. Otherwise, the configured
 // default_open_type is consulted ("editor" → true).
-func resolveUseEditor(cmd *cobra.Command, vault *obsidian.Vault) bool {
+func resolveUseEditor(cmd *cobra.Command, vault obsidian.VaultManager) bool {
 	useEditor, err := cmd.Flags().GetBool("editor")
 	if err != nil {
 		log.Fatalf("Failed to parse --editor flag: %v", err)

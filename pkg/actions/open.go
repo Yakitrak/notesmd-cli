@@ -1,6 +1,9 @@
 package actions
 
 import (
+	"fmt"
+	"os"
+
 	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 )
 
@@ -17,6 +20,9 @@ func OpenNote(vault obsidian.VaultManager, uri obsidian.UriManager, params OpenP
 	}
 
 	if params.UseEditor {
+		if params.Section != "" {
+			fmt.Fprintln(os.Stderr, "Warning: --section is ignored when using --editor")
+		}
 		vaultPath, err := vault.Path()
 		if err != nil {
 			return err

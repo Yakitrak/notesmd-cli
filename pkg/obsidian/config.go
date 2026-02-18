@@ -75,6 +75,9 @@ func ApplyDefaultFolder(noteName, vaultPath string) string {
 // MomentToGoFormat converts a Moment.js date format string to a Go time layout.
 // It uses a two-pass approach with placeholders to avoid cascading replacements
 // (e.g., replacing "a" inside "January").
+//
+// Note: the Moment.js "dd" token (2-letter weekday like "Mo", "Tu") has no Go
+// equivalent and is not supported.
 func MomentToGoFormat(momentFmt string) string {
 	// Order matters: longer tokens must be replaced before shorter ones.
 	replacements := []struct {
@@ -91,7 +94,6 @@ func MomentToGoFormat(momentFmt string) string {
 		{"D", "2"},
 		{"dddd", "Monday"},
 		{"ddd", "Mon"},
-		{"dd", "Mo"},
 		{"HH", "15"},
 		{"hh", "03"},
 		{"h", "3"},
