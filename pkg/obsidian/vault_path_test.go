@@ -115,8 +115,8 @@ func TestVaultPath(t *testing.T) {
 
 		configContent := `{
 			"vaults": {
-				"windows": {
-					"path": "C:\\Users\\user\\Documents\\Obsidian Vault"
+				"abc123": {
+					"path": "C:\\Users\\user\\Documents\\myVault"
 				}
 			}
 		}`
@@ -125,14 +125,14 @@ func TestVaultPath(t *testing.T) {
 			t.Fatalf("Failed to create obsidian.json file: %v", err)
 		}
 
-		vault := obsidian.Vault{Name: "windows"}
+		vault := obsidian.Vault{Name: "myVault"}
 
 		// Act
 		vaultPath, err := vault.Path()
 
 		// Assert
 		assert.NoError(t, err)
-		assert.Equal(t, "/mnt/c/Users/user/Documents/Obsidian Vault", vaultPath)
+		assert.Equal(t, "/mnt/c/Users/user/Documents/myVault", vaultPath)
 	})
 
 	t.Run("Converts windows D: path to WSL path when running in WSL", func(t *testing.T) {
@@ -147,7 +147,7 @@ func TestVaultPath(t *testing.T) {
 
 		configContent := `{
 			"vaults": {
-				"secondary": {
+				"def456": {
 					"path": "D:\\Data\\Vaults\\MyVault"
 				}
 			}
@@ -157,7 +157,7 @@ func TestVaultPath(t *testing.T) {
 			t.Fatalf("Failed to create obsidian.json file: %v", err)
 		}
 
-		vault := obsidian.Vault{Name: "secondary"}
+		vault := obsidian.Vault{Name: "MyVault"}
 
 		// Act
 		vaultPath, err := vault.Path()
@@ -179,7 +179,7 @@ func TestVaultPath(t *testing.T) {
 
 		configContent := `{
 			"vaults": {
-				"linux": {
+				"ghi789": {
 					"path": "/home/user/Documents/Obsidian Vault"
 				}
 			}
@@ -189,7 +189,7 @@ func TestVaultPath(t *testing.T) {
 			t.Fatalf("Failed to create obsidian.json file: %v", err)
 		}
 
-		vault := obsidian.Vault{Name: "linux"}
+		vault := obsidian.Vault{Name: "Obsidian Vault"}
 
 		// Act
 		vaultPath, err := vault.Path()
