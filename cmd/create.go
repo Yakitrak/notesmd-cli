@@ -21,28 +21,15 @@ var createNoteCmd = &cobra.Command{
 		uri := obsidian.Uri{}
 		noteName := args[0]
 
-		useEditor, err := cmd.Flags().GetBool("editor")
-		if err != nil {
-			log.Fatalf("Failed to parse --editor flag: %v", err)
-		}
-
-		// If --editor was not explicitly passed, fall back to the configured default open type.
-		if !cmd.Flags().Changed("editor") {
-			defaultOpenType, configErr := vault.DefaultOpenType()
-			if configErr == nil && defaultOpenType == "editor" {
-				useEditor = true
-			}
-		}
-
 		params := actions.CreateParams{
 			NoteName:        noteName,
 			Content:         content,
 			ShouldAppend:    shouldAppend,
 			ShouldOverwrite: shouldOverwrite,
 			ShouldOpen:      shouldOpen,
-			UseEditor:       useEditor,
+			UseEditor:       resolveUseEditor(cmd, &vault),
 		}
-		err = actions.CreateNote(&vault, &uri, params)
+		err := actions.CreateNote(&vault, &uri, params)
 		if err != nil {
 			log.Fatal(err)
 		}

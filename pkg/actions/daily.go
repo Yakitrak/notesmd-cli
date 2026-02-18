@@ -47,18 +47,18 @@ func DailyNote(vault obsidian.VaultManager, uri obsidian.UriManager, params Dail
 		return fmt.Errorf("failed to create daily note directory: %w", err)
 	}
 
-	// Only create if the file doesn't already exist.
-	if _, err := os.Stat(notePath); os.IsNotExist(err) {
-		content := ""
-		if config.Template != "" {
-			templatePath := filepath.Join(vaultPath, obsidian.AddMdSuffix(config.Template))
-			if templateContent, readErr := os.ReadFile(templatePath); readErr == nil {
-				content = string(templateContent)
-			}
+	// Read template content if configured.
+	content := ""
+	if config.Template != "" {
+		templatePath := filepath.Join(vaultPath, obsidian.AddMdSuffix(config.Template))
+		if templateContent, readErr := os.ReadFile(templatePath); readErr == nil {
+			content = string(templateContent)
 		}
-		if err := os.WriteFile(notePath, []byte(content), 0644); err != nil {
-			return fmt.Errorf("failed to create daily note: %w", err)
-		}
+	}
+
+	// WriteNoteFile leaves existing files unchanged (no append/overwrite).
+	if err := WriteNoteFile(notePath, content, false, false); err != nil {
+		return err
 	}
 
 	// Open the note.

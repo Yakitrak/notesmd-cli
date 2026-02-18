@@ -17,19 +17,8 @@ var DailyCmd = &cobra.Command{
 		vault := obsidian.Vault{Name: vaultName}
 		uri := obsidian.Uri{}
 
-		useEditor, err := cmd.Flags().GetBool("editor")
-		if err != nil {
-			log.Fatalf("Failed to parse --editor flag: %v", err)
-		}
-		if !cmd.Flags().Changed("editor") {
-			defaultOpenType, configErr := vault.DefaultOpenType()
-			if configErr == nil && defaultOpenType == "editor" {
-				useEditor = true
-			}
-		}
-
-		err = actions.DailyNote(&vault, &uri, actions.DailyParams{
-			UseEditor: useEditor,
+		err := actions.DailyNote(&vault, &uri, actions.DailyParams{
+			UseEditor: resolveUseEditor(cmd, &vault),
 		})
 		if err != nil {
 			log.Fatal(err)

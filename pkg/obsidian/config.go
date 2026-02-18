@@ -58,6 +58,20 @@ func ReadDailyNotesConfig(vaultPath string) DailyNotesConfig {
 	return config
 }
 
+// ApplyDefaultFolder prepends the configured default note folder to noteName
+// when noteName has no explicit path (no "/"). If the note name already
+// contains a "/", it is treated as an explicit path and returned unchanged.
+// Falls back to the original name if no default folder is configured.
+func ApplyDefaultFolder(noteName, vaultPath string) string {
+	if strings.Contains(noteName, "/") {
+		return noteName
+	}
+	if folder := DefaultNoteFolder(vaultPath); folder != "" {
+		return folder + "/" + noteName
+	}
+	return noteName
+}
+
 // MomentToGoFormat converts a Moment.js date format string to a Go time layout.
 // It uses a two-pass approach with placeholders to avoid cascading replacements
 // (e.g., replacing "a" inside "January").

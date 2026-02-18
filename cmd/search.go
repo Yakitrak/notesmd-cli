@@ -18,17 +18,7 @@ var searchCmd = &cobra.Command{
 		note := obsidian.Note{}
 		uri := obsidian.Uri{}
 		fuzzyFinder := obsidian.FuzzyFinder{}
-		useEditor, err := cmd.Flags().GetBool("editor")
-		if err != nil {
-			log.Fatalf("failed to retrieve 'editor' flag: %v", err)
-		}
-		if !cmd.Flags().Changed("editor") {
-			defaultOpenType, configErr := vault.DefaultOpenType()
-			if configErr == nil && defaultOpenType == "editor" {
-				useEditor = true
-			}
-		}
-		err = actions.SearchNotes(&vault, &note, &uri, &fuzzyFinder, useEditor)
+		err := actions.SearchNotes(&vault, &note, &uri, &fuzzyFinder, resolveUseEditor(cmd, &vault))
 		if err != nil {
 			log.Fatal(err)
 		}

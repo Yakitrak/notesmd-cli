@@ -9,19 +9,6 @@ import (
 	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 )
 
-// noteName returns the (possibly prefixed) note name based on Obsidian config.
-// If the name already contains a "/" it is treated as an explicit path and
-// returned unchanged. Otherwise, the configured default folder is prepended.
-func applyDefaultFolder(noteName, vaultPath string) string {
-	if strings.Contains(noteName, "/") {
-		return noteName
-	}
-	if folder := obsidian.DefaultNoteFolder(vaultPath); folder != "" {
-		return folder + "/" + noteName
-	}
-	return noteName
-}
-
 type CreateParams struct {
 	NoteName        string
 	ShouldAppend    bool
@@ -44,7 +31,7 @@ func CreateNote(vault obsidian.VaultManager, uri obsidian.UriManager, params Cre
 	}
 
 	// Prepend configured default folder when note name has no explicit path.
-	params.NoteName = applyDefaultFolder(params.NoteName, vaultPath)
+	params.NoteName = obsidian.ApplyDefaultFolder(params.NoteName, vaultPath)
 
 	// Validate the note path stays within the vault directory.
 	notePath, err := obsidian.ValidatePath(vaultPath, obsidian.AddMdSuffix(params.NoteName))
@@ -59,7 +46,7 @@ func CreateNote(vault obsidian.VaultManager, uri obsidian.UriManager, params Cre
 
 	// Write the file directly to disk — no Obsidian required.
 	normalizedContent := NormalizeContent(params.Content)
-	if err := writeNoteFile(notePath, normalizedContent, params.ShouldAppend, params.ShouldOverwrite); err != nil {
+	if err := WriteNoteFile(notePath, normalizedContent, params.ShouldAppend, params.ShouldOverwrite); err != nil {
 		return err
 	}
 
@@ -79,9 +66,9 @@ func CreateNote(vault obsidian.VaultManager, uri obsidian.UriManager, params Cre
 	return uri.Execute(obsidianUri)
 }
 
-// writeNoteFile writes content to notePath, respecting append/overwrite semantics.
+// WriteNoteFile writes content to notePath, respecting append/overwrite semantics.
 // If the file already exists and neither flag is set, it is left unchanged.
-func writeNoteFile(notePath, content string, shouldAppend, shouldOverwrite bool) error {
+func WriteNoteFile(notePath, content string, shouldAppend, shouldOverwrite bool) error {
 	_, err := os.Stat(notePath)
 	fileExists := err == nil
 

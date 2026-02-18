@@ -77,6 +77,40 @@ func TestDefaultNoteFolder(t *testing.T) {
 	})
 }
 
+func TestApplyDefaultFolder(t *testing.T) {
+	t.Run("Prepends folder when configured and no slash in name", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		obsDir := filepath.Join(tmpDir, ".obsidian")
+		os.MkdirAll(obsDir, 0755)
+		os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
+			"newFileLocation": "folder",
+			"newFileFolderPath": "Inbox"
+		}`), 0644)
+
+		result := obsidian.ApplyDefaultFolder("my-note", tmpDir)
+		assert.Equal(t, "Inbox/my-note", result)
+	})
+
+	t.Run("Does not prepend when name contains slash", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		obsDir := filepath.Join(tmpDir, ".obsidian")
+		os.MkdirAll(obsDir, 0755)
+		os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
+			"newFileLocation": "folder",
+			"newFileFolderPath": "Inbox"
+		}`), 0644)
+
+		result := obsidian.ApplyDefaultFolder("sub/my-note", tmpDir)
+		assert.Equal(t, "sub/my-note", result)
+	})
+
+	t.Run("Returns name unchanged when no config", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		result := obsidian.ApplyDefaultFolder("my-note", tmpDir)
+		assert.Equal(t, "my-note", result)
+	})
+}
+
 func TestReadDailyNotesConfig(t *testing.T) {
 	t.Run("Reads full config", func(t *testing.T) {
 		tmpDir := t.TempDir()

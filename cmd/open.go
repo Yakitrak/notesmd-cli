@@ -20,19 +20,8 @@ var OpenVaultCmd = &cobra.Command{
 		uri := obsidian.Uri{}
 		noteName := args[0]
 
-		useEditor, err := cmd.Flags().GetBool("editor")
-		if err != nil {
-			log.Fatalf("Failed to parse --editor flag: %v", err)
-		}
-		if !cmd.Flags().Changed("editor") {
-			defaultOpenType, configErr := vault.DefaultOpenType()
-			if configErr == nil && defaultOpenType == "editor" {
-				useEditor = true
-			}
-		}
-
-		params := actions.OpenParams{NoteName: noteName, Section: sectionName, UseEditor: useEditor}
-		err = actions.OpenNote(&vault, &uri, params)
+		params := actions.OpenParams{NoteName: noteName, Section: sectionName, UseEditor: resolveUseEditor(cmd, &vault)}
+		err := actions.OpenNote(&vault, &uri, params)
 		if err != nil {
 			log.Fatal(err)
 		}
