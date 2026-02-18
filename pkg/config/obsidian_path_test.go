@@ -21,12 +21,17 @@ func TestConfigObsidianPath(t *testing.T) {
 		defer os.Setenv("HOME", origHome)
 		os.Setenv("HOME", tempDir)
 
+		// Create the config file so os.Stat succeeds on all platforms.
+		configDir := filepath.Join(tempDir, "config", "obsidian")
+		os.MkdirAll(configDir, 0755)
+		os.WriteFile(filepath.Join(configDir, "obsidian.json"), []byte(`{}`), 0644)
+
 		config.UserConfigDirectory = func() (string, error) {
-			return "user/config/dir", nil
+			return filepath.Join(tempDir, "config"), nil
 		}
 		obsConfigFile, err := config.ObsidianFile()
 		assert.NoError(t, err)
-		assert.Equal(t, "user/config/dir/obsidian/obsidian.json", obsConfigFile)
+		assert.Equal(t, filepath.Join(tempDir, "config", "obsidian", "obsidian.json"), obsConfigFile)
 	})
 
 	t.Run("UserConfigDir func returns an error", func(t *testing.T) {

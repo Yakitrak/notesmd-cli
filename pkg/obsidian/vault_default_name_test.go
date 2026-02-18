@@ -132,6 +132,11 @@ func TestVaultSetDefaultName(t *testing.T) {
 	})
 
 	t.Run("Error in json marshal", func(t *testing.T) {
+		// Provide a valid CliConfigPath so the function reaches JsonMarshal.
+		mockCliConfigDir, mockCliConfigFile := mocks.CreateMockCliConfigDirectories(t)
+		obsidian.CliConfigPath = func() (string, string, error) {
+			return mockCliConfigDir, mockCliConfigFile, nil
+		}
 		// Temporarily override the JsonMarshal function
 		originalJsonMarshal := obsidian.JsonMarshal
 		defer func() { obsidian.JsonMarshal = originalJsonMarshal }()
@@ -172,4 +177,135 @@ func TestVaultSetDefaultName(t *testing.T) {
 		assert.Equal(t, err.Error(), obsidian.ObsidianCLIConfigWriteError)
 	})
 
+	t.Run("SetDefaultName preserves existing DefaultOpenType", func(t *testing.T) {
+		// Arrange
+		mockCliConfigDir, mockCliConfigFile := mocks.CreateMockCliConfigDirectories(t)
+		obsidian.CliConfigPath = func() (string, string, error) {
+			return mockCliConfigDir, mockCliConfigFile, nil
+		}
+		err := os.WriteFile(mockCliConfigFile, []byte(`{"default_vault_name":"old","default_open_type":"editor"}`), 0644)
+		assert.NoError(t, err)
+		vault := obsidian.Vault{}
+		// Act
+		err = vault.SetDefaultName("new-vault")
+		// Assert
+		assert.NoError(t, err)
+		content, err := os.ReadFile(mockCliConfigFile)
+		assert.NoError(t, err)
+		assert.Equal(t, `{"default_vault_name":"new-vault","default_open_type":"editor"}`, string(content))
+	})
+}
+
+func TestDefaultOpenType(t *testing.T) {
+	originalCliConfigPath := obsidian.CliConfigPath
+	defer func() { obsidian.CliConfigPath = originalCliConfigPath }()
+
+	t.Run("Returns obsidian when config file does not exist", func(t *testing.T) {
+		// Arrange
+		mockCliConfigDir, mockCliConfigFile := mocks.CreateMockCliConfigDirectories(t)
+		obsidian.CliConfigPath = func() (string, string, error) {
+			return mockCliConfigDir, mockCliConfigFile, nil
+		}
+		vault := obsidian.Vault{}
+		// Act
+		openType, err := vault.DefaultOpenType()
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, "obsidian", openType)
+	})
+
+	t.Run("Returns obsidian when field is not set in config", func(t *testing.T) {
+		// Arrange
+		mockCliConfigDir, mockCliConfigFile := mocks.CreateMockCliConfigDirectories(t)
+		obsidian.CliConfigPath = func() (string, string, error) {
+			return mockCliConfigDir, mockCliConfigFile, nil
+		}
+		err := os.WriteFile(mockCliConfigFile, []byte(`{"default_vault_name":"my-vault"}`), 0644)
+		assert.NoError(t, err)
+		vault := obsidian.Vault{}
+		// Act
+		openType, err := vault.DefaultOpenType()
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, "obsidian", openType)
+	})
+
+	t.Run("Returns configured value when set to editor", func(t *testing.T) {
+		// Arrange
+		mockCliConfigDir, mockCliConfigFile := mocks.CreateMockCliConfigDirectories(t)
+		obsidian.CliConfigPath = func() (string, string, error) {
+			return mockCliConfigDir, mockCliConfigFile, nil
+		}
+		err := os.WriteFile(mockCliConfigFile, []byte(`{"default_vault_name":"my-vault","default_open_type":"editor"}`), 0644)
+		assert.NoError(t, err)
+		vault := obsidian.Vault{}
+		// Act
+		openType, err := vault.DefaultOpenType()
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, "editor", openType)
+	})
+
+	t.Run("Returns error when CliConfigPath fails", func(t *testing.T) {
+		// Arrange
+		obsidian.CliConfigPath = func() (string, string, error) {
+			return "", "", os.ErrNotExist
+		}
+		vault := obsidian.Vault{}
+		// Act
+		_, err := vault.DefaultOpenType()
+		// Assert
+		assert.Equal(t, os.ErrNotExist, err)
+	})
+}
+
+func TestSetDefaultOpenType(t *testing.T) {
+	originalCliConfigPath := obsidian.CliConfigPath
+	defer func() { obsidian.CliConfigPath = originalCliConfigPath }()
+
+	t.Run("Sets open type successfully", func(t *testing.T) {
+		// Arrange
+		mockCliConfigDir, mockCliConfigFile := mocks.CreateMockCliConfigDirectories(t)
+		obsidian.CliConfigPath = func() (string, string, error) {
+			return mockCliConfigDir, mockCliConfigFile, nil
+		}
+		vault := obsidian.Vault{}
+		// Act
+		err := vault.SetDefaultOpenType("editor")
+		// Assert
+		assert.NoError(t, err)
+		content, err := os.ReadFile(mockCliConfigFile)
+		assert.NoError(t, err)
+		assert.Equal(t, `{"default_vault_name":"","default_open_type":"editor"}`, string(content))
+	})
+
+	t.Run("Preserves existing DefaultVaultName", func(t *testing.T) {
+		// Arrange
+		mockCliConfigDir, mockCliConfigFile := mocks.CreateMockCliConfigDirectories(t)
+		obsidian.CliConfigPath = func() (string, string, error) {
+			return mockCliConfigDir, mockCliConfigFile, nil
+		}
+		err := os.WriteFile(mockCliConfigFile, []byte(`{"default_vault_name":"my-vault"}`), 0644)
+		assert.NoError(t, err)
+		vault := obsidian.Vault{}
+		// Act
+		err = vault.SetDefaultOpenType("editor")
+		// Assert
+		assert.NoError(t, err)
+		content, err := os.ReadFile(mockCliConfigFile)
+		assert.NoError(t, err)
+		assert.Equal(t, `{"default_vault_name":"my-vault","default_open_type":"editor"}`, string(content))
+	})
+
+	t.Run("Error when CliConfigPath fails", func(t *testing.T) {
+		// Arrange
+		obsidian.CliConfigPath = func() (string, string, error) {
+			return "", "", os.ErrNotExist
+		}
+		vault := obsidian.Vault{}
+		// Act
+		err := vault.SetDefaultOpenType("editor")
+		// Assert
+		assert.Equal(t, os.ErrNotExist, err)
+	})
 }

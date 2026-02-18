@@ -10,7 +10,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:     "notesmd-cli",
 	Short:   "Interact with Obsidian vaults from the terminal",
-	Version: "v0.3.0",
+	Version: "v0.3.1",
 	Long:    "Interact with Obsidian vaults from the terminal",
 }
 
