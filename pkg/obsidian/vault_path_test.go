@@ -32,6 +32,24 @@ func TestVaultPath(t *testing.T) {
 		t.Fatalf("Failed to create obsidian.json file: %v", err)
 	}
 
+	t.Run("Returns absolute path directly without reading obsidian config", func(t *testing.T) {
+		// When the vault name is already an absolute path, Path() should return
+		// it without touching ObsidianConfigFile at all.
+		t.Cleanup(func() {
+			obsidian.ObsidianConfigFile = func() (string, error) {
+				return mockObsidianConfigFile, nil
+			}
+		})
+		obsidian.ObsidianConfigFile = func() (string, error) {
+			t.Fatal("ObsidianConfigFile should not be called when Name is an absolute path")
+			return "", nil
+		}
+		vault := obsidian.Vault{Name: "/home/user/Sync/MyVault"}
+		vaultPath, err := vault.Path()
+		assert.Equal(t, nil, err)
+		assert.Equal(t, "/home/user/Sync/MyVault", vaultPath)
+	})
+
 	t.Run("Gets vault path successfully from vault name without errors", func(t *testing.T) {
 		// Arrange
 		vault := obsidian.Vault{Name: "vault1"}
@@ -116,7 +134,7 @@ func TestVaultPath(t *testing.T) {
 		configContent := `{
 			"vaults": {
 				"abc123": {
-					"path": "C:\\Users\\user\\Documents\\myVault"
+					"path": "C:\\Users\\user\\Documents\\Obsidian Vault"
 				}
 			}
 		}`
@@ -125,14 +143,14 @@ func TestVaultPath(t *testing.T) {
 			t.Fatalf("Failed to create obsidian.json file: %v", err)
 		}
 
-		vault := obsidian.Vault{Name: "myVault"}
+		vault := obsidian.Vault{Name: "Obsidian Vault"}
 
 		// Act
 		vaultPath, err := vault.Path()
 
 		// Assert
 		assert.NoError(t, err)
-		assert.Equal(t, "/mnt/c/Users/user/Documents/myVault", vaultPath)
+		assert.Equal(t, "/mnt/c/Users/user/Documents/Obsidian Vault", vaultPath)
 	})
 
 	t.Run("Converts windows D: path to WSL path when running in WSL", func(t *testing.T) {

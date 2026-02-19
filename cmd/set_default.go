@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 	"github.com/spf13/cobra"
@@ -29,12 +30,15 @@ var setDefaultCmd = &cobra.Command{
 			if err := v.SetDefaultName(name); err != nil {
 				log.Fatal(err)
 			}
+			fmt.Println("Default vault set to:", name)
 			path, err := v.Path()
 			if err != nil {
-				log.Fatal(err)
+				// Path resolution is best-effort: the name is saved; Obsidian's
+				// config file may not be present or may not contain this vault yet.
+				fmt.Fprintln(os.Stderr, "Note: could not resolve vault path:", err)
+			} else {
+				fmt.Println("Default vault path set to:", path)
 			}
-			fmt.Println("Default vault set to:", name)
-			fmt.Println("Default vault path set to:", path)
 		}
 
 		if openType != "" {
