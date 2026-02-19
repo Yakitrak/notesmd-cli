@@ -134,7 +134,7 @@ func TestVaultPath(t *testing.T) {
 		configContent := `{
 			"vaults": {
 				"abc123": {
-					"path": "C:\\Users\\user\\Documents\\myVault"
+					"path": "C:\\Users\\user\\Documents\\Obsidian Vault"
 				}
 			}
 		}`
@@ -143,14 +143,14 @@ func TestVaultPath(t *testing.T) {
 			t.Fatalf("Failed to create obsidian.json file: %v", err)
 		}
 
-		vault := obsidian.Vault{Name: "myVault"}
+		vault := obsidian.Vault{Name: "Obsidian Vault"}
 
 		// Act
 		vaultPath, err := vault.Path()
 
 		// Assert
 		assert.NoError(t, err)
-		assert.Equal(t, "/mnt/c/Users/user/Documents/myVault", vaultPath)
+		assert.Equal(t, "/mnt/c/Users/user/Documents/Obsidian Vault", vaultPath)
 	})
 
 	t.Run("Converts windows D: path to WSL path when running in WSL", func(t *testing.T) {
