@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/Yakitrak/notesmd-cli/pkg/config"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -12,6 +13,12 @@ var ObsidianConfigFile = config.ObsidianFile
 var RunningInWSL = config.RunningInWSL
 
 func (v *Vault) Path() (string, error) {
+	// If the stored name is already an absolute path, return it directly
+	// without requiring Obsidian's config file to be present.
+	if filepath.IsAbs(v.Name) {
+		return v.Name, nil
+	}
+
 	obsidianConfigFile, err := ObsidianConfigFile()
 	if err != nil {
 		return "", err
