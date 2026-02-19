@@ -1,12 +1,8 @@
 package actions
 
 const (
-	obsBaseUrl   = "obsidian://"
-	openAction   = "open"
-	createAction = "new"
-	dailyAction  = "daily"
+	obsBaseUrl = "obsidian://"
+	openAction = "open"
 
-	ObsOpenUrl   = obsBaseUrl + openAction
-	ObsCreateUrl = obsBaseUrl + createAction
-	OnsDailyUrl  = obsBaseUrl + dailyAction
+	ObsOpenUrl = obsBaseUrl + openAction
 )

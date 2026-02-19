@@ -140,36 +140,39 @@ func ShouldSkipDirectoryOrFile(info os.FileInfo) bool {
 	return false
 }
 
-// OpenInEditor opens the specified file path in the user's preferred editor
-// It supports common GUI editors with appropriate wait flags
+// OpenInEditor opens the specified file path in the user's preferred editor.
+// It supports common GUI editors with appropriate wait flags and handles
+// EDITOR values that contain arguments (e.g., "code -w").
 func OpenInEditor(filePath string) error {
 	editor := os.Getenv("EDITOR")
 	if editor == "" {
 		editor = "vim" // Default fallback
 	}
 
-	// Parse editor command to handle GUI editors that need wait flags
-	var cmd *exec.Cmd
-	editorLower := strings.ToLower(filepath.Base(editor))
-	
-	switch {
-	case strings.Contains(editorLower, "code") || strings.Contains(editorLower, "vscode"):
-		// VSCode needs --wait flag to block
-		cmd = exec.Command(editor, "--wait", filePath)
-	case strings.Contains(editorLower, "subl"):
-		// Sublime Text needs --wait flag
-		cmd = exec.Command(editor, "--wait", filePath)
-	case strings.Contains(editorLower, "atom"):
-		// Atom needs --wait flag
-		cmd = exec.Command(editor, "--wait", filePath)
-	case strings.Contains(editorLower, "mate"):
-		// TextMate needs --wait flag
-		cmd = exec.Command(editor, "--wait", filePath)
-	default:
-		// For vim, nano, emacs, and other terminal editors, or unknown editors
-		cmd = exec.Command(editor, filePath)
+	// Split EDITOR into command and any user-provided arguments.
+	parts := strings.Fields(editor)
+	editorBin := parts[0]
+	userArgs := parts[1:]
+
+	// Build arguments: user-provided args + auto-detected wait flag + file path.
+	var args []string
+	args = append(args, userArgs...)
+
+	editorLower := strings.ToLower(filepath.Base(editorBin))
+	needsWait := strings.Contains(editorLower, "code") ||
+		strings.Contains(editorLower, "vscode") ||
+		strings.Contains(editorLower, "subl") ||
+		strings.Contains(editorLower, "atom") ||
+		strings.Contains(editorLower, "mate")
+
+	// Only add --wait if the user hasn't already included it.
+	if needsWait && !containsWaitFlag(userArgs) {
+		args = append(args, "--wait")
 	}
 
+	args = append(args, filePath)
+
+	cmd := exec.Command(editorBin, args...)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
@@ -179,4 +182,14 @@ func OpenInEditor(filePath string) error {
 	}
 
 	return nil
+}
+
+// containsWaitFlag checks if any of the args already include a wait-style flag.
+func containsWaitFlag(args []string) bool {
+	for _, a := range args {
+		if a == "--wait" || a == "-w" {
+			return true
+		}
+	}
+	return false
 }

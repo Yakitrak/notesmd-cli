@@ -20,21 +20,16 @@ var moveCmd = &cobra.Command{
 		vault := obsidian.Vault{Name: vaultName}
 		note := obsidian.Note{}
 		uri := obsidian.Uri{}
-		useEditor, err := cmd.Flags().GetBool("editor")
-		if err != nil {
-			log.Fatalf("Failed to parse --editor flag: %v", err)
-		}
 		params := actions.MoveParams{
 			CurrentNoteName: currentName,
 			NewNoteName:     newName,
 			ShouldOpen:      shouldOpen,
-			UseEditor:       useEditor,
+			UseEditor:       resolveUseEditor(cmd, &vault),
 		}
-		err = actions.MoveNote(&vault, &note, &uri, params)
+		err := actions.MoveNote(&vault, &note, &uri, params)
 		if err != nil {
 			log.Fatal(err)
 		}
-
 	},
 }
 

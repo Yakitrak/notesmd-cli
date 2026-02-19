@@ -1,10 +1,11 @@
 package cmd
 
 import (
+	"log"
+
 	"github.com/Yakitrak/notesmd-cli/pkg/actions"
 	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 var shouldAppend bool
@@ -19,19 +20,16 @@ var createNoteCmd = &cobra.Command{
 		vault := obsidian.Vault{Name: vaultName}
 		uri := obsidian.Uri{}
 		noteName := args[0]
-		useEditor, err := cmd.Flags().GetBool("editor")
-		if err != nil {
-			log.Fatalf("Failed to parse --editor flag: %v", err)
-		}
+
 		params := actions.CreateParams{
 			NoteName:        noteName,
 			Content:         content,
 			ShouldAppend:    shouldAppend,
 			ShouldOverwrite: shouldOverwrite,
 			ShouldOpen:      shouldOpen,
-			UseEditor:       useEditor,
+			UseEditor:       resolveUseEditor(cmd, &vault),
 		}
-		err = actions.CreateNote(&vault, &uri, params)
+		err := actions.CreateNote(&vault, &uri, params)
 		if err != nil {
 			log.Fatal(err)
 		}

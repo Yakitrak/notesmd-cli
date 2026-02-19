@@ -2,6 +2,7 @@ package actions_test
 
 import (
 	"errors"
+	"os"
 	"testing"
 
 	"github.com/Yakitrak/notesmd-cli/mocks"
@@ -64,5 +65,40 @@ func TestOpenNote(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Equal(t, "note.md#Section Name", uri.LastParams["file"])
+	})
+
+	t.Run("Opens note in editor when UseEditor is true", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
+		uri := mocks.MockUriManager{}
+
+		// Create the note file so the editor can open it
+		os.WriteFile(tmpDir+"/note.md", []byte("hello"), 0644)
+
+		originalEditor := os.Getenv("EDITOR")
+		defer os.Setenv("EDITOR", originalEditor)
+		os.Setenv("EDITOR", "true")
+
+		err := actions.OpenNote(&vault, &uri, actions.OpenParams{
+			NoteName:  "note",
+			UseEditor: true,
+		})
+
+		assert.NoError(t, err)
+	})
+
+	t.Run("Editor open fails when vault.Path returns error", func(t *testing.T) {
+		vault := mocks.MockVaultOperator{
+			Name:      "myVault",
+			PathError: errors.New("path error"),
+		}
+		uri := mocks.MockUriManager{}
+
+		err := actions.OpenNote(&vault, &uri, actions.OpenParams{
+			NoteName:  "note",
+			UseEditor: true,
+		})
+
+		assert.Equal(t, vault.PathError, err)
 	})
 }

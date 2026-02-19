@@ -35,6 +35,10 @@ func (v *vaultStub) Path() (string, error) {
 	return v.path, nil
 }
 
+func (v *vaultStub) DefaultOpenType() (string, error) {
+	return "obsidian", nil
+}
+
 func TestListEntries(t *testing.T) {
 	t.Run("List vault root", func(t *testing.T) {
 		vaultDir := t.TempDir()

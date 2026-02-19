@@ -1,9 +1,10 @@
 package actions
 
 import (
-	"strconv"
+	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 )
@@ -18,58 +19,77 @@ type CreateParams struct {
 }
 
 func CreateNote(vault obsidian.VaultManager, uri obsidian.UriManager, params CreateParams) error {
+	// DefaultName populates vault name from config if not already set (required before Path()).
 	vaultName, err := vault.DefaultName()
 	if err != nil {
 		return err
 	}
 
-	normalizedContent := NormalizeContent(params.Content)
-
-	if params.UseEditor && params.ShouldOpen {
-		vaultPath, err := vault.Path()
-		if err != nil {
-			return err
-		}
-		// Create note via Obsidian URI to respect append/overwrite flags
-		obsidianUri := uri.Construct(ObsCreateUrl, map[string]string{
-			"vault":     vaultName,
-			"append":    strconv.FormatBool(params.ShouldAppend),
-			"overwrite": strconv.FormatBool(params.ShouldOverwrite),
-			"content":   normalizedContent,
-			"file":      params.NoteName,
-			"silent":    "true",
-		})
-
-		if err := uri.Execute(obsidianUri); err != nil {
-			return err
-		}
-
-		// Wait for Obsidian to finish creating the file before opening in editor.
-		// The URI command is async, so we need a brief delay to ensure the file exists.
-		time.Sleep(200 * time.Millisecond)
-
-		// Validate path stays within vault directory
-		filePath, err := obsidian.ValidatePath(vaultPath, obsidian.AddMdSuffix(params.NoteName))
-		if err != nil {
-			return err
-		}
-		return obsidian.OpenInEditor(filePath)
-	}
-
-	obsidianUri := uri.Construct(ObsCreateUrl, map[string]string{
-		"vault":     vaultName,
-		"append":    strconv.FormatBool(params.ShouldAppend),
-		"overwrite": strconv.FormatBool(params.ShouldOverwrite),
-		"content":   normalizedContent,
-		"file":      params.NoteName,
-		"silent":    strconv.FormatBool(!params.ShouldOpen),
-	})
-
-	if err := uri.Execute(obsidianUri); err != nil {
+	vaultPath, err := vault.Path()
+	if err != nil {
 		return err
 	}
 
-	return nil
+	// Prepend configured default folder when note name has no explicit path.
+	params.NoteName = obsidian.ApplyDefaultFolder(params.NoteName, vaultPath)
+
+	// Validate the note path stays within the vault directory.
+	notePath, err := obsidian.ValidatePath(vaultPath, obsidian.AddMdSuffix(params.NoteName))
+	if err != nil {
+		return err
+	}
+
+	// Create any intermediate directories the note path requires.
+	if err := os.MkdirAll(filepath.Dir(notePath), 0755); err != nil {
+		return fmt.Errorf("failed to create note directory: %w", err)
+	}
+
+	// Write the file directly to disk — no Obsidian required.
+	normalizedContent := NormalizeContent(params.Content)
+	if err := WriteNoteFile(notePath, normalizedContent, params.ShouldAppend, params.ShouldOverwrite); err != nil {
+		return err
+	}
+
+	if !params.ShouldOpen {
+		return nil
+	}
+
+	if params.UseEditor {
+		return obsidian.OpenInEditor(notePath)
+	}
+
+	// Open the note in Obsidian via URI.
+	obsidianUri := uri.Construct(ObsOpenUrl, map[string]string{
+		"vault": vaultName,
+		"file":  params.NoteName,
+	})
+	return uri.Execute(obsidianUri)
+}
+
+// WriteNoteFile writes content to notePath, respecting append/overwrite semantics.
+// If the file already exists and neither flag is set, it is left unchanged.
+func WriteNoteFile(notePath, content string, shouldAppend, shouldOverwrite bool) error {
+	_, err := os.Stat(notePath)
+	fileExists := err == nil
+
+	if fileExists && shouldAppend {
+		f, err := os.OpenFile(notePath, os.O_APPEND|os.O_WRONLY, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to open note for appending: %w", err)
+		}
+		if _, err = f.WriteString(content); err != nil {
+			f.Close()
+			return err
+		}
+		return f.Close()
+	}
+
+	if fileExists && !shouldOverwrite {
+		// File exists but no modification requested — leave it as-is.
+		return nil
+	}
+
+	return os.WriteFile(notePath, []byte(content), 0644)
 }
 
 func NormalizeContent(content string) string {

@@ -21,11 +21,7 @@ var searchContentCmd = &cobra.Command{
 		fuzzyFinder := obsidian.FuzzyFinder{}
 
 		searchTerm := args[0]
-		useEditor, err := cmd.Flags().GetBool("editor")
-		if err != nil {
-			log.Fatalf("Failed to parse 'editor' flag: %v", err)
-		}
-		err = actions.SearchNotesContent(&vault, &note, &uri, &fuzzyFinder, searchTerm, useEditor)
+		err := actions.SearchNotesContent(&vault, &note, &uri, &fuzzyFinder, searchTerm, resolveUseEditor(cmd, &vault))
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -30,8 +30,11 @@ var printDefaultCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Println("Default vault name: ", name)
-		fmt.Println("Default vault path: ", path)
+		openType, _ := vault.DefaultOpenType()
+
+		fmt.Println("Default vault name:", name)
+		fmt.Println("Default vault path:", path)
+		fmt.Println("Default open type:", openType)
 	},
 }
 

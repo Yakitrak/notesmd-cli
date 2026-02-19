@@ -39,6 +39,31 @@ brew tap yakitrak/yakitrak
 brew install yakitrak/yakitrak/notesmd-cli
 ```
 
+### Arch Linux (AUR)
+
+Install with your preferred AUR helper:
+
+```bash
+paru -S notesmd-cli-bin
+```
+
+```bash
+yay -S notesmd-cli-bin
+```
+
+### Build from Source
+
+Requires [Go](https://go.dev/dl/) 1.19 or later.
+
+```bash
+git clone https://github.com/yakitrak/notesmd-cli.git
+cd notesmd-cli
+go build -o notesmd-cli .
+sudo install -m 755 notesmd-cli /usr/local/bin/
+```
+
+---
+
 ## Migrating from Obsidian CLI
 
 **Upgrading from `obsidian-cli` v0.2.3 or earlier?** See the detailed [Migration Guide](MIGRATION.md) for step-by-step instructions on uninstalling the old version, installing Vault CLI, and migrating your configuration.
@@ -54,9 +79,9 @@ notesmd-cli --help
 
 ### Editor Flag
 
-The `search`, `search-content`, `create`, and `move` commands support the `--editor` (or `-e`) flag, which opens notes in your default text editor instead of the Obsidian application. This is useful for quick edits or when working in a terminal-only environment.
+The `open`, `daily`, `search`, `search-content`, `create`, and `move` commands support the `--editor` (or `-e`) flag, which opens notes in your default text editor instead of the Obsidian application. This is useful for quick edits or when working in a terminal-only environment.
 
-The editor is determined by the `EDITOR` environment variable. If not set, it defaults to `vim`.
+The editor is determined by the `EDITOR` environment variable (e.g., `"vim"`, `"code"`, or `"code -w"`). If not set, it defaults to `vim`.
 
 **Supported editors:**
 
@@ -71,19 +96,36 @@ The editor is determined by the `EDITOR` environment variable. If not set, it de
 export EDITOR="code"  # or "vim", "nano", "subl", etc.
 
 # Use with supported commands
+notesmd-cli open "note.md" --editor
+notesmd-cli daily --editor
 notesmd-cli search --editor
 notesmd-cli search-content "term" --editor
 notesmd-cli create "note.md" --open --editor
 notesmd-cli move "old.md" "new.md" --open --editor
 ```
 
-### Set Default Vault
-
-Defines default vault for future usage. If not set, pass `--vault` flag for other commands. You don't provide the path to vault here, just the name.
+To avoid passing `--editor` every time, configure it as the default open type once:
 
 ```bash
-notesmd-cli set-default "{vault-name}"
+notesmd-cli set-default --open-type editor
 ```
+
+### Set Default Vault and Open Type
+
+Defines the default vault and/or open type for future usage. If no default vault is set, pass the `--vault` flag with other commands.
+
+```bash
+# Set default vault (vault name only, not the path)
+notesmd-cli set-default "{vault-name}"
+
+# Set default open type: 'obsidian' (default) or 'editor'
+notesmd-cli set-default --open-type editor
+
+# Set both at once
+notesmd-cli set-default "{vault-name}" --open-type editor
+```
+
+When `default_open_type` is set to `editor`, commands that support `--open` will open notes in `$EDITOR` automatically, without needing to pass `--editor` each time.
 
 Note: `open` and other commands in `notesmd-cli` use this vault's base directory as the working directory, not the current working directory of your terminal.
 
@@ -112,7 +154,7 @@ Then you can use `obs_cd` to navigate to the default vault directory within your
 
 ### Open Note
 
-Open given note name in Obsidian. Note can also be an absolute path from top level of vault.
+Open given note name in Obsidian (or your default editor). Note can also be an absolute path from top level of vault.
 
 ```bash
 # Opens note in obsidian vault
@@ -125,11 +167,14 @@ notesmd-cli open "{note-name}" --vault "{vault-name}"
 notesmd-cli open "{note-name}" --section "{heading-text}"
 
 notesmd-cli open "{note-name}" --vault "{vault-name}" --section "{heading-text}"
+
+# Opens note in your default editor instead of Obsidian
+notesmd-cli open "{note-name}" --editor
 ```
 
 ### Daily Note
 
-Open daily note in Obsidian. It will create one (using template) if one does not exist.
+Creates or opens today's daily note directly on disk — **Obsidian does not need to be running**. If `.obsidian/daily-notes.json` exists in the vault, the CLI reads `folder`, `format` (Moment.js date format, default `YYYY-MM-DD`), and `template` from it. A template file's content is used when creating a new daily note. If the config is missing or unreadable, defaults are used (vault root, `YYYY-MM-DD`, no template).
 
 ```bash
 # Creates / opens daily note in obsidian vault
@@ -138,6 +183,8 @@ notesmd-cli daily
 # Creates / opens daily note in specified obsidian vault
 notesmd-cli daily --vault "{vault-name}"
 
+# Creates / opens daily note in your default editor
+notesmd-cli daily --editor
 ```
 
 ### Search Note
@@ -206,25 +253,27 @@ notesmd-cli print "{note-name}" --vault "{vault-name}"
 
 ### Create / Update Note
 
-Creates note (can also be a path with name) in vault. By default, if the note exists, it will create another note but passing `--overwrite` or `--append` can be used to edit the named note.
+Creates a note (can also be a path with name) directly on disk — **Obsidian does not need to be running**. If the note already exists and neither `--overwrite` nor `--append` is passed, the file is left unchanged. Intermediate directories are created automatically.
+
+When the note name has no explicit path (no `/`), the CLI reads `.obsidian/app.json` from the vault to check for a configured default folder (`newFileLocation: "folder"` and `newFileFolderPath`). If configured, the note is placed in that folder. If the config is missing or unreadable, the note is created at the vault root.
 
 ```bash
-# Creates empty note in default obsidian and opens it
+# Creates empty note in default vault
 notesmd-cli create "{note-name}"
 
-# Creates empty note in given obsidian and opens it
-notesmd-cli create "{note-name}"  --vault "{vault-name}"
+# Creates empty note in specified vault
+notesmd-cli create "{note-name}" --vault "{vault-name}"
 
-# Creates note in default obsidian with content
+# Creates note with content
 notesmd-cli create "{note-name}" --content "abcde"
 
-# Creates note in default obsidian with content - overwrite existing note
+# Overwrites an existing note
 notesmd-cli create "{note-name}" --content "abcde" --overwrite
 
-# Creates note in default obsidian with content - append existing note
+# Appends to an existing note
 notesmd-cli create "{note-name}" --content "abcde" --append
 
-# Creates note and opens it
+# Creates note and opens it in Obsidian
 notesmd-cli create "{note-name}" --content "abcde" --open
 
 # Creates note and opens it in your default editor
