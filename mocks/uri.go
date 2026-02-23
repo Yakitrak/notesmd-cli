@@ -5,6 +5,7 @@ type MockUriManager struct {
 	LastBase       string
 	LastParams     map[string]string
 	ExecuteErr     error
+	ExecuteCalls   int
 }
 
 func (m *MockUriManager) Construct(base string, params map[string]string) string {
@@ -14,5 +15,6 @@ func (m *MockUriManager) Construct(base string, params map[string]string) string
 }
 
 func (m *MockUriManager) Execute(uri string) error {
+	m.ExecuteCalls++
 	return m.ExecuteErr
 }
