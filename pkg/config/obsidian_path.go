@@ -60,6 +60,13 @@ func ObsidianFile() (obsidianConfigFile string, err error) {
 	candidatePaths = append(candidatePaths,
 		filepath.Join(homeDir, "snap", "obsidian", "current", ".config", "obsidian", ObsidianConfigFile))
 
+	// Also check numbered snap subdirectories (e.g. ~/snap/obsidian/x1/.config/obsidian/)
+	// which exist when the "current" symlink is missing or multiple snap versions are installed.
+	snapNumberedPattern := filepath.Join(homeDir, "snap", "obsidian", "*", ".config", "obsidian", ObsidianConfigFile)
+	if matches, globErr := filepath.Glob(snapNumberedPattern); globErr == nil {
+		candidatePaths = append(candidatePaths, matches...)
+	}
+
 	var firstNonExistErr error
 	for _, path := range candidatePaths {
 		if _, statErr := os.Stat(path); statErr == nil {
