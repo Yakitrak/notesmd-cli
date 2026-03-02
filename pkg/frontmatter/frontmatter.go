@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	Delimiter              = "---"
-	NoFrontmatterError     = "note does not contain frontmatter"
+	Delimiter               = "---"
+	NoFrontmatterError      = "note does not contain frontmatter"
 	InvalidFrontmatterError = "frontmatter contains invalid YAML"
 )
 
@@ -27,7 +27,7 @@ func Parse(content string) (map[string]interface{}, string, error) {
 
 // Format converts a frontmatter map to a YAML string.
 func Format(fm map[string]interface{}) (string, error) {
-	if fm == nil || len(fm) == 0 {
+	if len(fm) == 0 {
 		return "", nil
 	}
 	data, err := yaml.Marshal(fm)

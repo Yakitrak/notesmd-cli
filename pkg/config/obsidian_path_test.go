@@ -23,8 +23,12 @@ func TestConfigObsidianPath(t *testing.T) {
 
 		// Create the config file so os.Stat succeeds on all platforms.
 		configDir := filepath.Join(tempDir, "config", "obsidian")
-		os.MkdirAll(configDir, 0755)
-		os.WriteFile(filepath.Join(configDir, "obsidian.json"), []byte(`{}`), 0644)
+		if err := os.MkdirAll(configDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(configDir, "obsidian.json"), []byte(`{}`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		config.UserConfigDirectory = func() (string, error) {
 			return filepath.Join(tempDir, "config"), nil

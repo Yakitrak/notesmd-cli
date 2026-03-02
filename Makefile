@@ -1,5 +1,8 @@
 BINARY_NAME=notesmd-cli
 
+install-hooks:
+	git config core.hooksPath .githooks
+
 build-all:
 	GOOS=darwin GOARCH=amd64 go build -o bin/darwin/${BINARY_NAME}
 	GOOS=linux GOARCH=amd64 go build -o bin/linux/${BINARY_NAME}

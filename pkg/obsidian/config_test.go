@@ -13,11 +13,15 @@ func TestDefaultNoteFolder(t *testing.T) {
 	t.Run("Returns folder when newFileLocation is folder", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
 			"newFileLocation": "folder",
 			"newFileFolderPath": "00 Inbox"
-		}`), 0644)
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		result := obsidian.DefaultNoteFolder(tmpDir)
 		assert.Equal(t, "00 Inbox", result)
@@ -26,10 +30,14 @@ func TestDefaultNoteFolder(t *testing.T) {
 	t.Run("Returns empty when newFileLocation is root", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
 			"newFileLocation": "root"
-		}`), 0644)
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		result := obsidian.DefaultNoteFolder(tmpDir)
 		assert.Equal(t, "", result)
@@ -38,10 +46,14 @@ func TestDefaultNoteFolder(t *testing.T) {
 	t.Run("Returns empty when newFileLocation is current", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
 			"newFileLocation": "current"
-		}`), 0644)
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		result := obsidian.DefaultNoteFolder(tmpDir)
 		assert.Equal(t, "", result)
@@ -56,8 +68,12 @@ func TestDefaultNoteFolder(t *testing.T) {
 	t.Run("Returns empty when config is invalid JSON", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`not json`), 0644)
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`not json`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		result := obsidian.DefaultNoteFolder(tmpDir)
 		assert.Equal(t, "", result)
@@ -66,11 +82,15 @@ func TestDefaultNoteFolder(t *testing.T) {
 	t.Run("Returns empty when folder location set but path is empty", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
 			"newFileLocation": "folder",
 			"newFileFolderPath": ""
-		}`), 0644)
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		result := obsidian.DefaultNoteFolder(tmpDir)
 		assert.Equal(t, "", result)
@@ -81,11 +101,15 @@ func TestApplyDefaultFolder(t *testing.T) {
 	t.Run("Prepends folder when configured and no slash in name", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
 			"newFileLocation": "folder",
 			"newFileFolderPath": "Inbox"
-		}`), 0644)
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		result := obsidian.ApplyDefaultFolder("my-note", tmpDir)
 		assert.Equal(t, "Inbox/my-note", result)
@@ -94,11 +118,15 @@ func TestApplyDefaultFolder(t *testing.T) {
 	t.Run("Does not prepend when name contains slash", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
 			"newFileLocation": "folder",
 			"newFileFolderPath": "Inbox"
-		}`), 0644)
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		result := obsidian.ApplyDefaultFolder("sub/my-note", tmpDir)
 		assert.Equal(t, "sub/my-note", result)
@@ -115,12 +143,16 @@ func TestReadDailyNotesConfig(t *testing.T) {
 	t.Run("Reads full config", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "daily-notes.json"), []byte(`{
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "daily-notes.json"), []byte(`{
 			"folder": "02 - Daily Notes",
 			"format": "YYYY-MM-DD",
 			"template": "Templates/Daily Note"
-		}`), 0644)
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		config := obsidian.ReadDailyNotesConfig(tmpDir)
 		assert.Equal(t, "02 - Daily Notes", config.Folder)
@@ -137,8 +169,12 @@ func TestReadDailyNotesConfig(t *testing.T) {
 	t.Run("Returns zero config for invalid JSON", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "daily-notes.json"), []byte(`bad`), 0644)
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "daily-notes.json"), []byte(`bad`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		config := obsidian.ReadDailyNotesConfig(tmpDir)
 		assert.Equal(t, obsidian.DailyNotesConfig{}, config)
@@ -147,10 +183,14 @@ func TestReadDailyNotesConfig(t *testing.T) {
 	t.Run("Handles partial config", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "daily-notes.json"), []byte(`{
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "daily-notes.json"), []byte(`{
 			"folder": "Daily"
-		}`), 0644)
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		config := obsidian.ReadDailyNotesConfig(tmpDir)
 		assert.Equal(t, "Daily", config.Folder)

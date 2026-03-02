@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var shouldRenderMarkdown bool
 var includeMentions bool
 
 var printCmd = &cobra.Command{

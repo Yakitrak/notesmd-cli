@@ -29,10 +29,14 @@ func TestDailyNote(t *testing.T) {
 	t.Run("Creates daily note in configured folder", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "daily-notes.json"), []byte(`{
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "daily-notes.json"), []byte(`{
 			"folder": "Daily"
-		}`), 0644)
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
 		uri := mocks.MockUriManager{}
@@ -45,14 +49,22 @@ func TestDailyNote(t *testing.T) {
 	t.Run("Uses template when configured", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "daily-notes.json"), []byte(`{
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "daily-notes.json"), []byte(`{
 			"template": "Templates/Daily"
-		}`), 0644)
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		// Create template file
-		os.MkdirAll(filepath.Join(tmpDir, "Templates"), 0755)
-		os.WriteFile(filepath.Join(tmpDir, "Templates", "Daily.md"), []byte("# Daily Note\n- [ ] Task"), 0644)
+		if err := os.MkdirAll(filepath.Join(tmpDir, "Templates"), 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(tmpDir, "Templates", "Daily.md"), []byte("# Daily Note\n- [ ] Task"), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
 		uri := mocks.MockUriManager{}
@@ -67,7 +79,9 @@ func TestDailyNote(t *testing.T) {
 	t.Run("Does not overwrite existing daily note", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		notePath := filepath.Join(tmpDir, today+".md")
-		os.WriteFile(notePath, []byte("existing content"), 0644)
+		if err := os.WriteFile(notePath, []byte("existing content"), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
 		uri := mocks.MockUriManager{}
@@ -96,8 +110,10 @@ func TestDailyNote(t *testing.T) {
 		uri := mocks.MockUriManager{}
 
 		originalEditor := os.Getenv("EDITOR")
-		defer os.Setenv("EDITOR", originalEditor)
-		os.Setenv("EDITOR", "true")
+		defer os.Setenv("EDITOR", originalEditor) //nolint:errcheck
+		if err := os.Setenv("EDITOR", "true"); err != nil {
+			t.Fatal(err)
+		}
 
 		err := actions.DailyNote(&vault, &uri, actions.DailyParams{UseEditor: true})
 		assert.NoError(t, err)
@@ -134,10 +150,14 @@ func TestDailyNote(t *testing.T) {
 	t.Run("Creates daily note with custom format", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "daily-notes.json"), []byte(`{
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "daily-notes.json"), []byte(`{
 			"format": "DD-MM-YYYY"
-		}`), 0644)
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
 		uri := mocks.MockUriManager{}

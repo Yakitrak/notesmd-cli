@@ -1,6 +1,6 @@
 module github.com/Yakitrak/notesmd-cli
 
-go 1.19
+go 1.23
 
 require (
 	github.com/adrg/frontmatter v0.2.0

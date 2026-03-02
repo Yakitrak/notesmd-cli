@@ -58,7 +58,9 @@ func getPathForVault(content []byte, name string) (string, error) {
 	}
 
 	for _, element := range vaultsContent.Vaults {
-		if strings.HasSuffix(element.Path, name) {
+		if element.Path == name ||
+			strings.HasSuffix(element.Path, "/"+name) ||
+			strings.HasSuffix(element.Path, "\\"+name) {
 			return element.Path, nil
 		}
 	}

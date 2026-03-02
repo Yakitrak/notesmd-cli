@@ -2,8 +2,8 @@ package actions
 
 import (
 	"fmt"
-	"path/filepath"
 	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
+	"path/filepath"
 )
 
 func SearchNotes(vault obsidian.VaultManager, note obsidian.NoteManager, uri obsidian.UriManager, fuzzyFinder obsidian.FuzzyFinderManager, useEditor bool) error {

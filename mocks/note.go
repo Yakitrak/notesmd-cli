@@ -3,15 +3,15 @@ package mocks
 import "github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 
 type MockNoteManager struct {
-	DeleteErr          error
-	MoveErr            error
-	UpdateLinksError   error
-	GetContentsError   error
-	SetContentsError   error
-	FindBacklinksErr   error
+	DeleteErr           error
+	MoveErr             error
+	UpdateLinksError    error
+	GetContentsError    error
+	SetContentsError    error
+	FindBacklinksErr    error
 	FindBacklinksResult []obsidian.NoteMatch
-	NoMatches          bool
-	Contents           string
+	NoMatches           bool
+	Contents            string
 }
 
 func (m *MockNoteManager) Delete(string) error {

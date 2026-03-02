@@ -1,0 +1,18 @@
+#!/bin/sh
+set -e
+
+# Check formatting (excluding vendor)
+UNFORMATTED=$(find . -name "*.go" -not -path "./vendor/*" | xargs gofmt -l)
+if [ -n "$UNFORMATTED" ]; then
+    echo "error: the following files need formatting (run: gofmt -w <file>):"
+    echo "$UNFORMATTED"
+    exit 1
+fi
+
+# Vet
+go vet ./...
+
+# Lint (if golangci-lint is installed)
+if command -v golangci-lint >/dev/null 2>&1; then
+    golangci-lint run ./...
+fi
