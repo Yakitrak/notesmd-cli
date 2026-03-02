@@ -89,12 +89,12 @@ func (v *Vault) DefaultOpenType() (string, error) {
 
 	content, err := os.ReadFile(cliConfigFile)
 	if err != nil {
-		return "obsidian", nil
+		return "obsidian", nil //nolint:nilerr -- graceful fallback when config file is absent
 	}
 
 	cliConfig := CliConfig{}
 	if err := json.Unmarshal(content, &cliConfig); err != nil {
-		return "obsidian", nil
+		return "obsidian", nil //nolint:nilerr -- graceful fallback when config is malformed
 	}
 
 	if cliConfig.DefaultOpenType == "" {

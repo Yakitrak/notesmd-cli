@@ -30,7 +30,9 @@ func TestVaultDefaultName(t *testing.T) {
 			obsidian.CliConfigPath = func() (string, string, error) {
 				return mockCliConfigDir, mockCliConfigFile, nil
 			}
-			err := os.WriteFile(mockCliConfigFile, []byte(`{"default_vault_name":"example-obsidian"}`), 0644)
+			if err := os.WriteFile(mockCliConfigFile, []byte(`{"default_vault_name":"example-obsidian"}`), 0644); err != nil {
+				t.Fatal(err)
+			}
 			vault := obsidian.Vault{}
 			// Act
 			vaultName, err := vault.DefaultName()
@@ -73,10 +75,12 @@ func TestVaultDefaultName(t *testing.T) {
 			obsidian.CliConfigPath = func() (string, string, error) {
 				return mockCliConfigDir, mockCliConfigFile, nil
 			}
-			err := os.WriteFile(mockCliConfigFile, []byte(`{"default_vault_name""example-obsidian`), 0644)
+			if err := os.WriteFile(mockCliConfigFile, []byte(`{"default_vault_name""example-obsidian`), 0644); err != nil {
+				t.Fatal(err)
+			}
 			vault := obsidian.Vault{}
 			// Act
-			_, err = vault.DefaultName()
+			_, err := vault.DefaultName()
 			// Assert
 			assert.Equal(t, err.Error(), obsidian.ObsidianCLIConfigParseError)
 		})
@@ -87,10 +91,12 @@ func TestVaultDefaultName(t *testing.T) {
 			obsidian.CliConfigPath = func() (string, string, error) {
 				return mockCliConfigDir, mockCliConfigFile, nil
 			}
-			err := os.WriteFile(mockCliConfigFile, []byte(`{"default_vault_name":""}`), 0644)
+			if err := os.WriteFile(mockCliConfigFile, []byte(`{"default_vault_name":""}`), 0644); err != nil {
+				t.Fatal(err)
+			}
 			vault := obsidian.Vault{}
 			// Act
-			_, err = vault.DefaultName()
+			_, err := vault.DefaultName()
 			// Assert
 			assert.Equal(t, err.Error(), obsidian.ObsidianCLIConfigParseError)
 		})
@@ -169,10 +175,12 @@ func TestVaultSetDefaultName(t *testing.T) {
 		obsidian.CliConfigPath = func() (string, string, error) {
 			return mockCliConfigDir + "/unwrittable", mockCliConfigDir + "unwrittable/preferences.json", nil
 		}
-		err := os.Mkdir(mockCliConfigDir+"/unwrittable", 0444)
+		if err := os.Mkdir(mockCliConfigDir+"/unwrittable", 0444); err != nil {
+			t.Fatal(err)
+		}
 		vault := obsidian.Vault{}
 		// Act
-		err = vault.SetDefaultName("vault-name")
+		err := vault.SetDefaultName("vault-name")
 		// Assert
 		assert.Equal(t, err.Error(), obsidian.ObsidianCLIConfigWriteError)
 	})

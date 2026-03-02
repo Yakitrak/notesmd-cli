@@ -355,7 +355,7 @@ func (m *Note) FindBacklinks(vaultPath, noteName string) ([]NoteMatch, error) {
 
 		info, err := d.Info()
 		if err != nil {
-			return nil
+			return nil //nolint:nilerr -- skip unreadable files, continue walking
 		}
 		if info.Size() > maxFileSizeBytes {
 			fmt.Fprintf(os.Stderr, "Skipping file %s: size %d bytes exceeds limit %d bytes\n", relPath, info.Size(), maxFileSizeBytes)
@@ -364,7 +364,7 @@ func (m *Note) FindBacklinks(vaultPath, noteName string) ([]NoteMatch, error) {
 
 		content, err := os.ReadFile(path)
 		if err != nil {
-			return nil
+			return nil //nolint:nilerr -- skip unreadable files, continue walking
 		}
 
 		// Quick check: skip file if it doesn't contain any pattern

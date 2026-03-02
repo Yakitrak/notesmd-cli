@@ -73,7 +73,9 @@ func TestOpenNote(t *testing.T) {
 		uri := mocks.MockUriManager{}
 
 		// Create the note file so the editor can open it
-		os.WriteFile(tmpDir+"/note.md", []byte("hello"), 0644)
+		if err := os.WriteFile(tmpDir+"/note.md", []byte("hello"), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		originalEditor := os.Getenv("EDITOR")
 		defer os.Setenv("EDITOR", originalEditor)
