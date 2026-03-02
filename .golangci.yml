@@ -1,0 +1,17 @@
+version: "2"
+linters:
+  default: none
+  enable:
+    - govet
+    - staticcheck
+    - errcheck
+    - unused
+    - gosimple
+    - ineffassign
+    - gofmt
+    - nilerr
+linters-settings:
+  govet:
+    enable-all: true
+    disable:
+      - shadow
