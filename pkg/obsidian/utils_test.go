@@ -205,9 +205,9 @@ func TestOpenInEditor(t *testing.T) {
 		// Set EDITOR to a command that will succeed and exit quickly
 		originalEditor := os.Getenv("EDITOR")
 		defer os.Setenv("EDITOR", originalEditor)
-		
+
 		os.Setenv("EDITOR", "true") // 'true' command always succeeds and exits immediately
-		
+
 		err := obsidian.OpenInEditor(testFile)
 		if err != nil {
 			t.Errorf("Expected no error, got: %v", err)
@@ -218,9 +218,9 @@ func TestOpenInEditor(t *testing.T) {
 		// Unset EDITOR environment variable
 		originalEditor := os.Getenv("EDITOR")
 		defer os.Setenv("EDITOR", originalEditor)
-		
+
 		os.Unsetenv("EDITOR")
-		
+
 		// TODO: We can't easily test vim opening in a test environment without it hanging.
 		// Consider using a test helper that mocks the command execution or documenting
 		// this limitation more explicitly to clarify this is intentional technical debt.
@@ -230,14 +230,14 @@ func TestOpenInEditor(t *testing.T) {
 	t.Run("Handles nonexistent file", func(t *testing.T) {
 		originalEditor := os.Getenv("EDITOR")
 		defer os.Setenv("EDITOR", originalEditor)
-		
+
 		// Use 'true' which succeeds regardless of arguments
 		// Editors typically create new files when they don't exist
 		os.Setenv("EDITOR", "true")
-		
+
 		nonexistentFile := filepath.Join(tempDir, "nonexistent.md")
 		err := obsidian.OpenInEditor(nonexistentFile)
-		
+
 		// Should succeed - editors typically create new files
 		if err != nil {
 			t.Errorf("Expected no error for nonexistent file with 'true' editor, got: %v", err)
@@ -247,17 +247,17 @@ func TestOpenInEditor(t *testing.T) {
 	t.Run("Handles editor command failure", func(t *testing.T) {
 		originalEditor := os.Getenv("EDITOR")
 		defer os.Setenv("EDITOR", originalEditor)
-		
+
 		// Use a command that will always fail
 		os.Setenv("EDITOR", "false") // 'false' command always fails
-		
+
 		err := obsidian.OpenInEditor(testFile)
-		
+
 		// We expect this to fail and have error context
 		if err == nil {
 			t.Error("Expected error for failing editor command, got nil")
 		}
-		
+
 		// Check that error message contains context
 		if err != nil {
 			errMsg := err.Error()

@@ -11,3 +11,8 @@ fi
 
 # Vet
 go vet ./...
+
+# Lint (if golangci-lint is installed)
+if command -v golangci-lint >/dev/null 2>&1; then
+    golangci-lint run ./...
+fi
