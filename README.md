@@ -41,14 +41,14 @@ brew install yakitrak/yakitrak/notesmd-cli
 
 ### Arch Linux (AUR)
 
-Install with your preferred AUR helper:
-
-```bash
-paru -S notesmd-cli-bin
+Install the offical binary with your preferred AUR helper:
+```sh
+yay -S notesmd-cli-bin
 ```
 
-```bash
-yay -S notesmd-cli-bin
+Or build from source:
+```sh
+yay -S notesmd-cli
 ```
 
 ### Build from Source
