@@ -60,7 +60,9 @@ func TestCreateNote(t *testing.T) {
 		// Arrange
 		tmpDir := t.TempDir()
 		notePath := filepath.Join(tmpDir, "note.md")
-		os.WriteFile(notePath, []byte("original"), 0644)
+		if err := os.WriteFile(notePath, []byte("original"), 0644); err != nil {
+			t.Fatal(err)
+		}
 		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
 		uri := mocks.MockUriManager{}
 		// Act
@@ -78,7 +80,9 @@ func TestCreateNote(t *testing.T) {
 		// Arrange
 		tmpDir := t.TempDir()
 		notePath := filepath.Join(tmpDir, "note.md")
-		os.WriteFile(notePath, []byte("original"), 0644)
+		if err := os.WriteFile(notePath, []byte("original"), 0644); err != nil {
+			t.Fatal(err)
+		}
 		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
 		uri := mocks.MockUriManager{}
 		// Act
@@ -97,7 +101,9 @@ func TestCreateNote(t *testing.T) {
 		// Arrange
 		tmpDir := t.TempDir()
 		notePath := filepath.Join(tmpDir, "note.md")
-		os.WriteFile(notePath, []byte("original"), 0644)
+		if err := os.WriteFile(notePath, []byte("original"), 0644); err != nil {
+			t.Fatal(err)
+		}
 		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
 		uri := mocks.MockUriManager{}
 		// Act
@@ -215,11 +221,15 @@ func TestCreateNote(t *testing.T) {
 		// Arrange
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
 			"newFileLocation": "folder",
 			"newFileFolderPath": "Inbox"
-		}`), 0644)
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
 		uri := mocks.MockUriManager{}
@@ -237,11 +247,15 @@ func TestCreateNote(t *testing.T) {
 		// Arrange
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
-		os.MkdirAll(obsDir, 0755)
-		os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
 			"newFileLocation": "folder",
 			"newFileFolderPath": "Inbox"
-		}`), 0644)
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
 
 		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
 		uri := mocks.MockUriManager{}

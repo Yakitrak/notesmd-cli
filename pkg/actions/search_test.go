@@ -97,7 +97,7 @@ func TestSearchNotes(t *testing.T) {
 
 		// Act - test with editor flag enabled
 		err := actions.SearchNotes(&vault, &note, &uri, &fuzzyFinder, true)
-		
+
 		// Assert - should succeed without calling URI execute
 		assert.NoError(t, err)
 	})
@@ -120,7 +120,7 @@ func TestSearchNotes(t *testing.T) {
 
 		// Act - test with editor flag enabled
 		err := actions.SearchNotes(&vault, &note, &uri, &fuzzyFinder, true)
-		
+
 		// Assert - should fail due to editor failure
 		assert.Error(t, err)
 	})

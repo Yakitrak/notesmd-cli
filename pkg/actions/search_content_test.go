@@ -14,7 +14,7 @@ import (
 // CustomMockNoteForSingleMatch returns exactly one match for editor testing
 type CustomMockNoteForSingleMatch struct{}
 
-func (m *CustomMockNoteForSingleMatch) Delete(string) error                       { return nil }
+func (m *CustomMockNoteForSingleMatch) Delete(string) error                        { return nil }
 func (m *CustomMockNoteForSingleMatch) Move(string, string) error                  { return nil }
 func (m *CustomMockNoteForSingleMatch) UpdateLinks(string, string, string) error   { return nil }
 func (m *CustomMockNoteForSingleMatch) GetContents(string, string) (string, error) { return "", nil }
@@ -127,13 +127,13 @@ func TestSearchNotesContent(t *testing.T) {
 
 		// Act - test with editor flag enabled
 		err := actions.SearchNotesContent(&vault, note, &uri, &fuzzyFinder, "test", true)
-		
+
 		// Assert - should succeed without calling URI execute
 		assert.NoError(t, err)
 	})
 
 	t.Run("Successful content search with editor flag - multiple matches", func(t *testing.T) {
-		// Set up mocks for multiple match scenario  
+		// Set up mocks for multiple match scenario
 		vault := mocks.MockVaultOperator{
 			Name: "myVault",
 		}
@@ -150,7 +150,7 @@ func TestSearchNotesContent(t *testing.T) {
 
 		// Act - test with editor flag enabled
 		err := actions.SearchNotesContent(&vault, &note, &uri, &fuzzyFinder, "test", true)
-		
+
 		// Assert - should succeed without calling URI execute
 		assert.NoError(t, err)
 	})
@@ -171,7 +171,7 @@ func TestSearchNotesContent(t *testing.T) {
 
 		// Act - test with editor flag enabled
 		err := actions.SearchNotesContent(&vault, note, &uri, &fuzzyFinder, "test", true)
-		
+
 		// Assert - should fail due to editor failure
 		assert.Error(t, err)
 	})

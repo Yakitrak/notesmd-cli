@@ -1,12 +1,12 @@
 package mocks
 
 type MockVaultOperator struct {
-	DefaultNameErr   error
-	PathError        error
-	Name             string
-	PathValue        string
-	OpenType         string
-	OpenTypeErr      error
+	DefaultNameErr error
+	PathError      error
+	Name           string
+	PathValue      string
+	OpenType       string
+	OpenTypeErr    error
 }
 
 func (m *MockVaultOperator) DefaultName() (string, error) {
