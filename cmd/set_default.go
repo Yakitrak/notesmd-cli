@@ -25,7 +25,10 @@ var setDefaultCmd = &cobra.Command{
 		}
 
 		if len(args) > 0 {
-			name := args[0]
+			name, err := obsidian.ResolveVaultName(args[0])
+			if err != nil {
+				log.Fatal(err)
+			}
 			v := obsidian.Vault{Name: name}
 			if err := v.SetDefaultName(name); err != nil {
 				log.Fatal(err)
