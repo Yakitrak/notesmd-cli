@@ -1,6 +1,5 @@
-version: "2"
 linters:
-  default: none
+  disable-all: true
   enable:
     - govet
     - staticcheck
