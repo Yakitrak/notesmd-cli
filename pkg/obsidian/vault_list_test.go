@@ -158,3 +158,106 @@ func TestListVaults(t *testing.T) {
 		assert.Equal(t, "/home/user/Notes", vaults[0].Path)
 	})
 }
+
+func TestResolveVaultName(t *testing.T) {
+	originalObsidianConfigFile := obsidian.ObsidianConfigFile
+	originalRunningInWSL := obsidian.RunningInWSL
+	defer func() {
+		obsidian.ObsidianConfigFile = originalObsidianConfigFile
+		obsidian.RunningInWSL = originalRunningInWSL
+	}()
+
+	obsidian.RunningInWSL = func() bool { return false }
+
+	obsidianConfig := `{
+		"vaults": {
+			"abc123": {
+				"path": "/Users/user/Documents/Personal"
+			},
+			"def456": {
+				"path": "/Users/user/Documents/Work"
+			}
+		}
+	}`
+
+	setupConfig := func(t *testing.T) {
+		t.Helper()
+		mockObsidianConfigFile := mocks.CreateMockObsidianConfigFile(t)
+		obsidian.ObsidianConfigFile = func() (string, error) {
+			return mockObsidianConfigFile, nil
+		}
+		err := os.WriteFile(mockObsidianConfigFile, []byte(obsidianConfig), 0644)
+		assert.NoError(t, err)
+	}
+
+	t.Run("Resolves exact vault name", func(t *testing.T) {
+		setupConfig(t)
+
+		name, err := obsidian.ResolveVaultName("Personal")
+
+		assert.NoError(t, err)
+		assert.Equal(t, "Personal", name)
+	})
+
+	t.Run("Resolves full path to vault name", func(t *testing.T) {
+		setupConfig(t)
+
+		name, err := obsidian.ResolveVaultName("/Users/user/Documents/Personal")
+
+		assert.NoError(t, err)
+		assert.Equal(t, "Personal", name)
+	})
+
+	t.Run("Resolves path with trailing slash to vault name", func(t *testing.T) {
+		setupConfig(t)
+
+		name, err := obsidian.ResolveVaultName("/Users/user/Documents/Work/")
+
+		assert.NoError(t, err)
+		assert.Equal(t, "Work", name)
+	})
+
+	t.Run("Returns error for unregistered vault", func(t *testing.T) {
+		setupConfig(t)
+
+		_, err := obsidian.ResolveVaultName("NonExistent")
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "not found in Obsidian")
+		assert.Contains(t, err.Error(), "Personal")
+		assert.Contains(t, err.Error(), "Work")
+	})
+
+	t.Run("Returns error for unregistered path", func(t *testing.T) {
+		setupConfig(t)
+
+		_, err := obsidian.ResolveVaultName("/var/workspace/obsidian")
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "not found in Obsidian")
+	})
+
+	t.Run("Returns error when no vaults registered", func(t *testing.T) {
+		mockObsidianConfigFile := mocks.CreateMockObsidianConfigFile(t)
+		obsidian.ObsidianConfigFile = func() (string, error) {
+			return mockObsidianConfigFile, nil
+		}
+		err := os.WriteFile(mockObsidianConfigFile, []byte(`{"vaults":{}}`), 0644)
+		assert.NoError(t, err)
+
+		_, err = obsidian.ResolveVaultName("anything")
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "no vaults registered")
+	})
+
+	t.Run("Propagates config file errors", func(t *testing.T) {
+		obsidian.ObsidianConfigFile = func() (string, error) {
+			return "", os.ErrNotExist
+		}
+
+		_, err := obsidian.ResolveVaultName("Personal")
+
+		assert.Error(t, err)
+	})
+}
