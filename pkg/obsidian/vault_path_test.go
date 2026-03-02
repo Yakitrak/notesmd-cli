@@ -50,6 +50,32 @@ func TestVaultPath(t *testing.T) {
 		assert.Equal(t, "/home/user/Sync/MyVault", vaultPath)
 	})
 
+	t.Run("Does not match vault with a name that is a suffix of another vault name", func(t *testing.T) {
+		// Arrange
+		obsidian.ObsidianConfigFile = func() (string, error) {
+			return mockObsidianConfigFile, nil
+		}
+		t.Cleanup(func() {
+			_ = os.WriteFile(mockObsidianConfigFile, []byte(obsidianConfig), 0644)
+		})
+		config := `{
+        "vaults": {
+            "abc": {"path": "/path/to/my-notes"},
+            "def": {"path": "/path/to/notes"}
+        }
+    }`
+		err := os.WriteFile(mockObsidianConfigFile, []byte(config), 0644)
+		if err != nil {
+			t.Fatalf("Failed to write config: %v", err)
+		}
+		vault := obsidian.Vault{Name: "notes"}
+		// Act
+		vaultPath, err := vault.Path()
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, "/path/to/notes", vaultPath)
+	})
+
 	t.Run("Gets vault path successfully from vault name without errors", func(t *testing.T) {
 		// Arrange
 		vault := obsidian.Vault{Name: "vault1"}
@@ -113,7 +139,9 @@ func TestVaultPath(t *testing.T) {
 		obsidian.ObsidianConfigFile = func() (string, error) {
 			return mockObsidianConfigFile, nil
 		}
-		err := os.WriteFile(mockObsidianConfigFile, []byte(`{"vaults":{}}`), 0644)
+		if err := os.WriteFile(mockObsidianConfigFile, []byte(`{"vaults":{}}`), 0644); err != nil {
+			t.Fatalf("Failed to write config: %v", err)
+		}
 		vault := obsidian.Vault{Name: "vault3"}
 		// Act
 		_, err = vault.Path()
