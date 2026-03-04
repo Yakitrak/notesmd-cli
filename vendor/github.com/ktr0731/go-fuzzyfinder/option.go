@@ -17,6 +17,7 @@ type opt struct {
 	context       context.Context
 	query         string
 	selectOne     bool
+	preselected   func(i int) bool
 }
 
 type mode int
@@ -35,6 +36,7 @@ const (
 var defaultOption = opt{
 	promptString:  "> ",
 	hotReloadLock: &sync.Mutex{}, // this won't resolve the race condition but avoid nil panic
+	preselected:   func(i int) bool { return false },
 }
 
 // Option represents available fuzzy-finding options.
@@ -91,6 +93,8 @@ const (
 )
 
 // WithCursorPosition sets the initial position of the cursor
+//
+// If Find is called with WithCursorPosition and WithPreselected, the cursor will be positioned at the first preselected item.
 func WithCursorPosition(position cursorPosition) Option {
 	return func(o *opt) {
 		switch position {
@@ -141,5 +145,18 @@ func WithQuery(s string) Option {
 func WithSelectOne() Option {
 	return func(o *opt) {
 		o.selectOne = true
+	}
+}
+
+// WithPreselected enables to specify which items should be preselected.
+// The argument f is a function that returns true for items that should be preselected.
+// i is the same index value passed to itemFunc in Find or FindMulti.
+// This option is effective in both Find and FindMulti, but in Find mode only
+// the first preselected item will be considered.
+//
+// If Find is called with WithCursorPosition and WithPreselected, the cursor will be positioned at the first preselected item.
+func WithPreselected(f func(i int) bool) Option {
+	return func(o *opt) {
+		o.preselected = f
 	}
 }

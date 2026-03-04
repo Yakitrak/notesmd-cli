@@ -105,15 +105,42 @@ func (f *finder) initFinder(items []string, matched []matching.Matched, opt opt)
 	f.opt = &opt
 	f.state = state{}
 
+	var cursorPositioned bool
 	if opt.multi {
 		f.state.selection = map[int]int{}
+		f.state.selectionIdx = 1
+
+		// Apply preselection
+		for i := range items {
+			if opt.preselected(i) {
+				f.state.selection[i] = f.state.selectionIdx
+				f.state.selectionIdx++
+			}
+		}
+	} else {
+		// In non-multi mode, set the cursor position to the first preselected item
+		for i := range items {
+			if opt.preselected(i) {
+				cursorPositioned = true
+				// Find the matched item index
+				for j, m := range matched {
+					if m.Idx == i {
+						f.state.y = j
+						f.state.cursorY = min(j, len(matched)-1)
+						break
+					}
+				}
+				break // Only use the first preselected item
+			}
+		}
 	}
 
 	f.state.items = items
 	f.state.matched = matched
 	f.state.allMatched = matched
 
-	if opt.beginAtTop {
+	// If no preselected item is found and beginAtTop is true, set the cursor to the last item
+	if !cursorPositioned && opt.beginAtTop {
 		f.state.cursorY = len(f.state.matched) - 1
 		f.state.y = len(f.state.matched) - 1
 	}
@@ -145,6 +172,18 @@ func (f *finder) updateItems(items []string, matched []matching.Matched) {
 	f.state.items = items
 	f.state.matched = matched
 	f.state.allMatched = matched
+
+	// Apply preselection to any new items
+	if f.opt.multi {
+		for i := 0; i < len(items); i++ {
+			// Check if this item is not already in the selection and should be preselected
+			if _, exists := f.state.selection[i]; !exists && f.opt.preselected(i) {
+				f.state.selection[i] = f.state.selectionIdx
+				f.state.selectionIdx++
+			}
+		}
+	}
+
 	f.stateMu.Unlock()
 	f.eventCh <- struct{}{}
 }
@@ -650,6 +689,18 @@ func (f *finder) filter() {
 		f.state.cursorY = 0
 		f.state.y = 0
 		return
+	}
+
+	// If we are in single-select mode, try to move cursor to the first preselected item
+	// that's still in the matched results
+	if !f.opt.multi {
+		for i, m := range f.state.matched {
+			if f.opt.preselected(m.Idx) {
+				f.state.y = i
+				f.state.cursorY = min(i, len(f.state.matched)-1)
+				return
+			}
+		}
 	}
 
 	switch {

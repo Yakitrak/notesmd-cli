@@ -2,7 +2,7 @@
 
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/ktr0731/go-fuzzyfinder)](https://pkg.go.dev/github.com/ktr0731/go-fuzzyfinder)
 [![GitHub Actions](https://github.com/ktr0731/go-fuzzyfinder/workflows/main/badge.svg)](https://github.com/ktr0731/go-fuzzyfinder/actions)
-[![codecov](https://codecov.io/gh/ktr0731/go-fuzzyfinder/branch/master/graph/badge.svg?token=RvpSTKDJGO)](https://codecov.io/gh/ktr0731/go-fuzzyfinder)  
+[![codecov](https://codecov.io/gh/ktr0731/go-fuzzyfinder/branch/master/graph/badge.svg?token=RvpSTKDJGO)](https://codecov.io/gh/ktr0731/go-fuzzyfinder)
 
 `go-fuzzyfinder` is a Go library that provides fuzzy-finding with an fzf-like terminal user interface.
 
@@ -58,9 +58,39 @@ func main() {
 
 The execution result prints selected item's indexes.
 
+### Preselecting items
+
+You can preselect items using the `WithPreselected` option. It works in both `Find` and `FindMulti`.
+
+``` go
+// Single selection mode
+// The cursor will be positioned on the first item that matches the predicate
+idx, err := fuzzyfinder.Find(
+    tracks,
+    func(i int) string {
+        return tracks[i].Name
+    },
+    fuzzyfinder.WithPreselected(func(i int) bool {
+        return tracks[i].Name == "bar"
+    }),
+)
+
+// Multi selection mode
+// All items that match the predicate will be selected initially
+idxs, err := fuzzyfinder.FindMulti(
+    tracks,
+    func(i int) string {
+        return tracks[i].Name
+    },
+    fuzzyfinder.WithPreselected(func(i int) bool {
+        return tracks[i].Artist == "artist2"
+    }),
+)
+```
+
 ## Motivation
 Fuzzy-finder command-line tools such that
-[fzf](https://github.com/junegunn/fzf), [fzy](https://github.com/jhawthorn/fzy), or [skim](https://github.com/lotabout/skim) 
+[fzf](https://github.com/junegunn/fzf), [fzy](https://github.com/jhawthorn/fzy), or [skim](https://github.com/lotabout/skim)
 are very powerful to find out specified lines interactively.
 However, there are limits to deal with fuzzy-finder's features in several cases.
 
