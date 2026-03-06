@@ -178,16 +178,23 @@ func (m *Note) UpdateLinks(vaultPath string, oldNoteName string, newNoteName str
 }
 
 func (m *Note) GetNotesList(vaultPath string) ([]string, error) {
+	excluded := ExcludedPaths(vaultPath)
 	var notes []string
 	err := filepath.WalkDir(vaultPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-		if !d.IsDir() && strings.HasSuffix(d.Name(), ".md") {
-			relPath, err := filepath.Rel(vaultPath, path)
-			if err != nil {
-				return err
+		relPath, err := filepath.Rel(vaultPath, path)
+		if err != nil {
+			return err
+		}
+		if relPath != "." && IsExcluded(relPath, excluded) {
+			if d.IsDir() {
+				return filepath.SkipDir
 			}
+			return nil
+		}
+		if !d.IsDir() && strings.HasSuffix(d.Name(), ".md") {
 			notes = append(notes, relPath)
 		}
 		return nil
@@ -199,6 +206,7 @@ func (m *Note) GetNotesList(vaultPath string) ([]string, error) {
 }
 
 func (m *Note) SearchNotesWithSnippets(vaultPath string, query string) ([]NoteMatch, error) {
+	excluded := ExcludedPaths(vaultPath)
 	var matches []NoteMatch
 	queryLower := strings.ToLower(query)
 
@@ -206,12 +214,17 @@ func (m *Note) SearchNotesWithSnippets(vaultPath string, query string) ([]NoteMa
 		if err != nil {
 			return err
 		}
-		if !d.IsDir() && strings.HasSuffix(d.Name(), ".md") {
-			relPath, err := filepath.Rel(vaultPath, path)
-			if err != nil {
-				return err
+		relPath, relErr := filepath.Rel(vaultPath, path)
+		if relErr != nil {
+			return relErr
+		}
+		if relPath != "." && IsExcluded(relPath, excluded) {
+			if d.IsDir() {
+				return filepath.SkipDir
 			}
-
+			return nil
+		}
+		if !d.IsDir() && strings.HasSuffix(d.Name(), ".md") {
 			fileNameMatches := strings.Contains(strings.ToLower(relPath), queryLower)
 			var hasContentMatch bool
 
@@ -324,6 +337,7 @@ func findMatchingLines(content []byte, patternsLower [][]byte) []NoteMatch {
 
 func (m *Note) FindBacklinks(vaultPath, noteName string) ([]NoteMatch, error) {
 	noteName = RemoveMdSuffix(noteName)
+	excluded := ExcludedPaths(vaultPath)
 
 	// Generate patterns and convert to lowercase bytes once
 	patterns := GenerateBacklinkSearchPatterns(noteName)
@@ -339,13 +353,20 @@ func (m *Note) FindBacklinks(vaultPath, noteName string) ([]NoteMatch, error) {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() || !strings.HasSuffix(d.Name(), ".md") {
-			return nil
-		}
 
 		relPath, err := filepath.Rel(vaultPath, path)
 		if err != nil {
 			return err
+		}
+		if relPath != "." && IsExcluded(relPath, excluded) {
+			if d.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
+
+		if d.IsDir() || !strings.HasSuffix(d.Name(), ".md") {
+			return nil
 		}
 
 		// Skip the note itself (normalize for comparison)

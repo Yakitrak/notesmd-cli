@@ -10,8 +10,9 @@ import (
 
 // ObsidianAppConfig represents relevant fields from .obsidian/app.json.
 type ObsidianAppConfig struct {
-	NewFileLocation   string `json:"newFileLocation"`
-	NewFileFolderPath string `json:"newFileFolderPath"`
+	NewFileLocation   string   `json:"newFileLocation"`
+	NewFileFolderPath string   `json:"newFileFolderPath"`
+	UserIgnoreFilters []string `json:"userIgnoreFilters"`
 }
 
 // DailyNotesConfig represents relevant fields from .obsidian/daily-notes.json.
@@ -19,6 +20,22 @@ type DailyNotesConfig struct {
 	Folder   string `json:"folder"`
 	Format   string `json:"format"`
 	Template string `json:"template"`
+}
+
+// ExcludedPaths reads the userIgnoreFilters from .obsidian/app.json and returns
+// the list of path patterns to exclude. Returns nil if the config is absent or unreadable.
+func ExcludedPaths(vaultPath string) []string {
+	data, err := os.ReadFile(filepath.Join(vaultPath, ".obsidian", "app.json"))
+	if err != nil {
+		return nil
+	}
+
+	var config ObsidianAppConfig
+	if err := json.Unmarshal(data, &config); err != nil {
+		return nil
+	}
+
+	return config.UserIgnoreFilters
 }
 
 // DefaultNoteFolder reads the configured default folder for new notes from

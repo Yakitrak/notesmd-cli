@@ -199,6 +199,60 @@ func TestReadDailyNotesConfig(t *testing.T) {
 	})
 }
 
+func TestExcludedPaths(t *testing.T) {
+	t.Run("Returns filters from app.json", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		obsDir := filepath.Join(tmpDir, ".obsidian")
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
+			"userIgnoreFilters": ["Archive", "Templates/", "Private/Notes"]
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
+
+		result := obsidian.ExcludedPaths(tmpDir)
+		assert.Equal(t, []string{"Archive", "Templates/", "Private/Notes"}, result)
+	})
+
+	t.Run("Returns nil when config is absent", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		result := obsidian.ExcludedPaths(tmpDir)
+		assert.Nil(t, result)
+	})
+
+	t.Run("Returns nil on invalid JSON", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		obsDir := filepath.Join(tmpDir, ".obsidian")
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`not json`), 0644); err != nil {
+			t.Fatal(err)
+		}
+
+		result := obsidian.ExcludedPaths(tmpDir)
+		assert.Nil(t, result)
+	})
+
+	t.Run("Returns nil when userIgnoreFilters absent", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		obsDir := filepath.Join(tmpDir, ".obsidian")
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(`{
+			"newFileLocation": "root"
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
+
+		result := obsidian.ExcludedPaths(tmpDir)
+		assert.Nil(t, result)
+	})
+}
+
 func TestMomentToGoFormat(t *testing.T) {
 	tests := []struct {
 		name     string

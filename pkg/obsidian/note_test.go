@@ -477,6 +477,46 @@ func TestNote_GetNotesList(t *testing.T) {
 		assert.NoError(t, err, "Expected no error when non-Markdown files are present")
 		assert.Empty(t, notes, "Expected empty notes list when no Markdown files are present")
 	})
+
+	t.Run("Excludes files and folders matching userIgnoreFilters", func(t *testing.T) {
+		// Arrange
+		tmpDir := t.TempDir()
+		archiveDir := filepath.Join(tmpDir, "Archive")
+		assert.NoError(t, os.MkdirAll(archiveDir, 0755))
+		assert.NoError(t, os.WriteFile(filepath.Join(tmpDir, "visible.md"), []byte(""), 0644))
+		assert.NoError(t, os.WriteFile(filepath.Join(archiveDir, "old.md"), []byte(""), 0644))
+		assert.NoError(t, os.WriteFile(filepath.Join(tmpDir, "excluded-file.md"), []byte(""), 0644))
+		writeObsidianAppJSON(t, tmpDir, []string{"Archive", "excluded-file.md"})
+
+		noteManager := obsidian.Note{}
+
+		// Act
+		notes, err := noteManager.GetNotesList(tmpDir)
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"visible.md"}, notes)
+	})
+}
+
+func writeObsidianAppJSON(t *testing.T, vaultDir string, filters []string) {
+	t.Helper()
+	obsDir := filepath.Join(vaultDir, ".obsidian")
+	if err := os.MkdirAll(obsDir, 0755); err != nil {
+		t.Fatal(err)
+	}
+	filterJSON := "["
+	for i, f := range filters {
+		if i > 0 {
+			filterJSON += ","
+		}
+		filterJSON += `"` + f + `"`
+	}
+	filterJSON += "]"
+	content := `{"userIgnoreFilters":` + filterJSON + `}`
+	if err := os.WriteFile(filepath.Join(obsDir, "app.json"), []byte(content), 0644); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestSearchNotesWithSnippets(t *testing.T) {
@@ -590,6 +630,25 @@ func TestSearchNotesWithSnippets(t *testing.T) {
 		// Assert
 		assert.NoError(t, err)
 		assert.Empty(t, matches)
+	})
+
+	t.Run("Excludes paths matching userIgnoreFilters", func(t *testing.T) {
+		// Arrange
+		tempDir := t.TempDir()
+		archiveDir := filepath.Join(tempDir, "Archive")
+		assert.NoError(t, os.MkdirAll(archiveDir, 0755))
+		assert.NoError(t, os.WriteFile(filepath.Join(tempDir, "visible.md"), []byte("test content"), 0644))
+		assert.NoError(t, os.WriteFile(filepath.Join(archiveDir, "old.md"), []byte("test content"), 0644))
+		writeObsidianAppJSON(t, tempDir, []string{"Archive"})
+
+		// Act
+		note := obsidian.Note{}
+		matches, err := note.SearchNotesWithSnippets(tempDir, "test")
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Len(t, matches, 1)
+		assert.Equal(t, "visible.md", matches[0].FilePath)
 	})
 
 	t.Run("Search with long lines gets truncated", func(t *testing.T) {
@@ -754,6 +813,28 @@ func TestFindBacklinks(t *testing.T) {
 		// Assert
 		assert.NoError(t, err)
 		assert.Len(t, matches, 1)
+	})
+
+	t.Run("Excludes paths matching userIgnoreFilters", func(t *testing.T) {
+		// Arrange
+		tempDir := t.TempDir()
+		archiveDir := filepath.Join(tempDir, "Archive")
+		assert.NoError(t, os.MkdirAll(archiveDir, 0755))
+
+		assert.NoError(t, os.WriteFile(filepath.Join(tempDir, "target.md"), []byte("Target"), 0644))
+		assert.NoError(t, os.WriteFile(filepath.Join(tempDir, "linker.md"), []byte("Links to [[target]]"), 0644))
+		// This file is in an excluded folder and should not appear in results
+		assert.NoError(t, os.WriteFile(filepath.Join(archiveDir, "archived.md"), []byte("Also links [[target]]"), 0644))
+		writeObsidianAppJSON(t, tempDir, []string{"Archive"})
+
+		// Act
+		note := obsidian.Note{}
+		matches, err := note.FindBacklinks(tempDir, "target")
+
+		// Assert
+		assert.NoError(t, err)
+		assert.Len(t, matches, 1)
+		assert.Equal(t, "linker.md", matches[0].FilePath)
 	})
 
 	t.Run("Find links in subdirectories", func(t *testing.T) {

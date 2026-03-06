@@ -130,6 +130,21 @@ func ReplaceContent(content []byte, replacements map[string]string) []byte {
 	return content
 }
 
+// IsExcluded reports whether relPath (a slash-separated path relative to the
+// vault root) matches any of the Obsidian userIgnoreFilters patterns.
+// A pattern matches if the path equals the filter or is inside the filtered
+// folder (i.e. has the filter as a path prefix).
+func IsExcluded(relPath string, filters []string) bool {
+	normalized := filepath.ToSlash(relPath)
+	for _, filter := range filters {
+		filter = strings.TrimRight(filter, "/")
+		if normalized == filter || strings.HasPrefix(normalized, filter+"/") {
+			return true
+		}
+	}
+	return false
+}
+
 func ShouldSkipDirectoryOrFile(info os.FileInfo) bool {
 	isDirectory := info.IsDir()
 	isHidden := info.Name()[0] == '.'

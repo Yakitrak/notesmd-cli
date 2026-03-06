@@ -166,6 +166,33 @@ func TestReplaceContent(t *testing.T) {
 
 }
 
+func TestIsExcluded(t *testing.T) {
+	tests := []struct {
+		name    string
+		relPath string
+		filters []string
+		want    bool
+	}{
+		{"empty filters", "Archive/note.md", []string{}, false},
+		{"nil filters", "Archive/note.md", nil, false},
+		{"exact folder match", "Archive", []string{"Archive"}, true},
+		{"file inside excluded folder", "Archive/note.md", []string{"Archive"}, true},
+		{"nested file inside excluded folder", "Archive/2024/note.md", []string{"Archive"}, true},
+		{"filter with trailing slash", "Templates/daily.md", []string{"Templates/"}, true},
+		{"no match", "Notes/note.md", []string{"Archive", "Templates"}, false},
+		{"partial folder name does not match", "Archives/note.md", []string{"Archive"}, false},
+		{"exact file match", "Private/secret.md", []string{"Private/secret.md"}, true},
+		{"multiple filters, one matches", "Templates/t.md", []string{"Archive", "Templates"}, true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := obsidian.IsExcluded(tt.relPath, tt.filters)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestShouldSkipDirectoryOrFile(t *testing.T) {
 	tests := []struct {
 		testName string
