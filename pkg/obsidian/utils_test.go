@@ -173,6 +173,7 @@ func TestIsExcluded(t *testing.T) {
 		filters []string
 		want    bool
 	}{
+		// Plain path prefix matching
 		{"empty filters", "Archive/note.md", []string{}, false},
 		{"nil filters", "Archive/note.md", nil, false},
 		{"exact folder match", "Archive", []string{"Archive"}, true},
@@ -183,6 +184,17 @@ func TestIsExcluded(t *testing.T) {
 		{"partial folder name does not match", "Archives/note.md", []string{"Archive"}, false},
 		{"exact file match", "Private/secret.md", []string{"Private/secret.md"}, true},
 		{"multiple filters, one matches", "Templates/t.md", []string{"Archive", "Templates"}, true},
+		// Glob patterns
+		{"glob *.pdf matches file at root", "report.pdf", []string{"*.pdf"}, true},
+		{"glob *.pdf matches file in subfolder", "docs/report.pdf", []string{"*.pdf"}, true},
+		{"glob *.pdf does not match .md", "note.md", []string{"*.pdf"}, false},
+		{"glob *.pdf matches deeply nested", "a/b/c/file.pdf", []string{"*.pdf"}, true},
+		// Double-star patterns
+		{"**/drafts matches folder at root", "drafts", []string{"**/drafts"}, true},
+		{"**/drafts matches nested folder", "a/b/drafts", []string{"**/drafts"}, true},
+		{"**/drafts matches file inside", "a/drafts/note.md", []string{"**/drafts"}, true},
+		{"**/*.pdf matches nested pdf", "docs/file.pdf", []string{"**/*.pdf"}, true},
+		{"**/drafts does not match partial", "mydrafts", []string{"**/drafts"}, false},
 	}
 
 	for _, tt := range tests {

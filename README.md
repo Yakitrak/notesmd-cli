@@ -352,6 +352,15 @@ notesmd-cli frontmatter "{note-name}" --delete --key "draft"
 notesmd-cli frontmatter "{note-name}" --print --vault "{vault-name}"
 ```
 
+## Excluded Files
+
+The CLI respects Obsidian's **Excluded Files** setting (`Settings → Files & Links → Excluded Files`).
+
+- `search` — excluded notes won't appear in the fuzzy finder
+- `search-content` — excluded folders won't be searched
+
+All other commands (`open`, `move`, `print`, `frontmatter`, etc.) still access excluded files as they refer to notes by name.
+
 ## Contribution
 
 Fork the project, add your feature or fix and submit a pull request. You can also open an [issue](https://github.com/yakitrak/notesmd-cli/issues/new/choose) to report a bug or request a feature.
