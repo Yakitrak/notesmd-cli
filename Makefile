@@ -17,6 +17,9 @@ clean-all:
 test:
 	go test ./...
 
+test-search-content:
+	go test ./pkg/actions -run TestSearchNotesContent -v
+
 test-coverage:
 	go test ./... -coverprofile=coverage.out
 

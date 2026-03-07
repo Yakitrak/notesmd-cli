@@ -228,7 +228,7 @@ notesmd-cli search --editor
 
 ### Search Note Content
 
-Searches for notes containing search term in the content of notes. It will display a list of matching notes with the line number and a snippet of the matching line. You can hit enter on a note to open that in Obsidian.
+Searches for notes containing a term in note content. By default, it opens an interactive picker and lets you open the selected note in Obsidian (or your editor). For automation and scripting, use `--no-interactive` or `--format json` to print results to stdout.
 
 ```bash
 # Searches for content in default obsidian vault
@@ -239,6 +239,12 @@ notesmd-cli search-content "search term" --vault "{vault-name}"
 
 # Searches and opens selected note in your default editor
 notesmd-cli search-content "search term" --editor
+
+# Prints grep-style results to stdout (non-interactive)
+notesmd-cli search-content "search term" --no-interactive
+
+# Prints JSON for scripts (implies non-interactive mode)
+notesmd-cli search-content "search term" --format json
 
 ```
 
