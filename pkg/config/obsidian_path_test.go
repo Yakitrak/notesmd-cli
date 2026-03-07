@@ -201,6 +201,36 @@ func TestConfigObsidianPath(t *testing.T) {
 		assert.Equal(t, nativeConfigFile, obsConfigFile)
 	})
 
+	t.Run("Finds numbered Snap config on Linux when current symlink does not exist", func(t *testing.T) {
+		if runtime.GOOS != "linux" {
+			t.Skip("Snap test only runs on Linux")
+		}
+
+		originalUserConfigDir := config.UserConfigDirectory
+		defer func() { config.UserConfigDirectory = originalUserConfigDir }()
+
+		tempDir := t.TempDir()
+		snapDir := filepath.Join(tempDir, "snap", "obsidian", "x1", ".config", "obsidian")
+		err := os.MkdirAll(snapDir, 0755)
+		assert.NoError(t, err)
+
+		snapConfigFile := filepath.Join(snapDir, "obsidian.json")
+		err = os.WriteFile(snapConfigFile, []byte(`{"vaults":{}}`), 0644)
+		assert.NoError(t, err)
+
+		origHome := os.Getenv("HOME")
+		defer os.Setenv("HOME", origHome)
+		os.Setenv("HOME", tempDir)
+
+		config.UserConfigDirectory = func() (string, error) {
+			return filepath.Join(tempDir, ".config"), nil
+		}
+
+		obsConfigFile, err := config.ObsidianFile()
+		assert.NoError(t, err)
+		assert.Equal(t, snapConfigFile, obsConfigFile)
+	})
+
 	t.Run("Finds WSL Install Location", func(t *testing.T) {
 		if runtime.GOOS != "linux" {
 			t.Skip("WSL test only runs on Linux")
