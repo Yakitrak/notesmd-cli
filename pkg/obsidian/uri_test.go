@@ -22,6 +22,10 @@ func TestUriConstruct(t *testing.T) {
 		{"Two keys", map[string]string{"key1": "value1", "key2": "value2"}, map[string]string{"key1": "value1", "key2": "value2"}},
 		{"Empty value", map[string]string{"key": ""}, nil},
 		{"Mix of empty and non-empty values", map[string]string{"key1": "value1", "key2": ""}, map[string]string{"key1": "value1"}},
+		{"Value with ampersand", map[string]string{"file": "R&D Notes"}, map[string]string{"file": "R&D Notes"}},
+		{"Value with hash", map[string]string{"file": "section#heading"}, map[string]string{"file": "section#heading"}},
+		{"Value with equals", map[string]string{"file": "a=b"}, map[string]string{"file": "a=b"}},
+		{"Value with spaces and special chars", map[string]string{"file": "my notes & ideas", "vault": "test#vault"}, map[string]string{"file": "my notes & ideas", "vault": "test#vault"}},
 	}
 
 	for _, test := range tests {

@@ -88,12 +88,12 @@ func SearchNotesContentWithOptions(vault obsidian.VaultManager, note obsidian.No
 	}
 
 	if len(matches) == 0 {
-		fmt.Fprintf(output, "No notes found containing '%s'\n", searchTerm)
+		_, _ = fmt.Fprintf(output, "No notes found containing '%s'\n", searchTerm)
 		return nil
 	}
 
 	if len(matches) == 1 {
-		fmt.Fprintf(output, "Opening note: %s\n", matches[0].FilePath)
+		_, _ = fmt.Fprintf(output, "Opening note: %s\n", matches[0].FilePath)
 		if useEditor {
 			filePath := filepath.Join(vaultPath, matches[0].FilePath)
 			return obsidian.OpenInEditor(filePath)
@@ -117,7 +117,7 @@ func SearchNotesContentWithOptions(vault obsidian.VaultManager, note obsidian.No
 	selectedMatch := matches[index]
 	if useEditor {
 		filePath := filepath.Join(vaultPath, selectedMatch.FilePath)
-		fmt.Fprintf(output, "Opening note: %s\n", selectedMatch.FilePath)
+		_, _ = fmt.Fprintf(output, "Opening note: %s\n", selectedMatch.FilePath)
 		return obsidian.OpenInEditor(filePath)
 	}
 	obsidianUri := uri.Construct(ObsOpenUrl, map[string]string{
@@ -159,7 +159,7 @@ func printMatches(matches []obsidian.NoteMatch, searchTerm string, format string
 			return nil
 		}
 		for _, match := range matches {
-			fmt.Fprintln(output, formatMatchForList(match))
+			_, _ = fmt.Fprintln(output, formatMatchForList(match))
 		}
 		return nil
 	case searchContentFormatJSON:

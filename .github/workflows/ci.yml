@@ -1,8 +1,6 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
   pull_request:
     branches: [main]
 
@@ -59,7 +57,7 @@ jobs:
         run: govulncheck ./...
       - name: Install gosec
         # Pin to a specific version — update manually or watch https://github.com/securego/gosec/releases
-        run: go install github.com/securego/gosec/v2/cmd/gosec@v2.21.4
+        run: go install github.com/securego/gosec/v2/cmd/gosec@v2.22.11
       - name: Run gosec
         run: gosec -severity medium -confidence medium -exclude=G204,G301,G302,G304,G306 ./...
 

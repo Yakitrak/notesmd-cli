@@ -19,9 +19,9 @@ func (u *Uri) Construct(baseUri string, params map[string]string) string {
 	for key, value := range params {
 		if value != "" && value != "false" {
 			if uri == baseUri {
-				uri += "?" + key + "=" + url.PathEscape(value)
+				uri += "?" + key + "=" + url.QueryEscape(value)
 			} else {
-				uri += "&" + key + "=" + url.PathEscape(value)
+				uri += "&" + key + "=" + url.QueryEscape(value)
 			}
 		}
 	}
