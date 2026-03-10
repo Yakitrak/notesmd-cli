@@ -251,6 +251,48 @@ func TestResolveVaultName(t *testing.T) {
 		assert.Contains(t, err.Error(), "no vaults registered")
 	})
 
+	t.Run("Returns error for ambiguous vault name", func(t *testing.T) {
+		ambiguousConfig := `{
+			"vaults": {
+				"abc123": {"path": "/home/user/work/Notes"},
+				"def456": {"path": "/home/user/personal/Notes"}
+			}
+		}`
+		mockObsidianConfigFile := mocks.CreateMockObsidianConfigFile(t)
+		obsidian.ObsidianConfigFile = func() (string, error) {
+			return mockObsidianConfigFile, nil
+		}
+		err := os.WriteFile(mockObsidianConfigFile, []byte(ambiguousConfig), 0644)
+		assert.NoError(t, err)
+
+		_, err = obsidian.ResolveVaultName("Notes")
+
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "multiple vaults named")
+		assert.Contains(t, err.Error(), "/home/user/work/Notes")
+		assert.Contains(t, err.Error(), "/home/user/personal/Notes")
+	})
+
+	t.Run("Resolves ambiguous name via full path", func(t *testing.T) {
+		ambiguousConfig := `{
+			"vaults": {
+				"abc123": {"path": "/home/user/work/Notes"},
+				"def456": {"path": "/home/user/personal/Notes"}
+			}
+		}`
+		mockObsidianConfigFile := mocks.CreateMockObsidianConfigFile(t)
+		obsidian.ObsidianConfigFile = func() (string, error) {
+			return mockObsidianConfigFile, nil
+		}
+		err := os.WriteFile(mockObsidianConfigFile, []byte(ambiguousConfig), 0644)
+		assert.NoError(t, err)
+
+		name, err := obsidian.ResolveVaultName("/home/user/work/Notes")
+
+		assert.NoError(t, err)
+		assert.Equal(t, "Notes", name)
+	})
+
 	t.Run("Propagates config file errors", func(t *testing.T) {
 		obsidian.ObsidianConfigFile = func() (string, error) {
 			return "", os.ErrNotExist

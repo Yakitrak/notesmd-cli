@@ -57,11 +57,25 @@ func ResolveVaultName(input string) (string, error) {
 		return "", errors.New("no vaults registered in Obsidian. Please create a vault in Obsidian first")
 	}
 
-	// Exact name match
+	// Collect all name matches
+	var nameMatches []VaultInfo
 	for _, v := range vaults {
 		if v.Name == input {
-			return v.Name, nil
+			nameMatches = append(nameMatches, v)
 		}
+	}
+	if len(nameMatches) == 1 {
+		return nameMatches[0].Name, nil
+	}
+	if len(nameMatches) > 1 {
+		var paths []string
+		for _, m := range nameMatches {
+			paths = append(paths, fmt.Sprintf("  %s", m.Path))
+		}
+		return "", fmt.Errorf(
+			"multiple vaults named %q found. Use the full path to disambiguate:\n%s",
+			input, strings.Join(paths, "\n"),
+		)
 	}
 
 	// Exact path match (user passed a full path)
