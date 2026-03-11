@@ -3,8 +3,11 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"os"
 	"sort"
+	"text/tabwriter"
 
 	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 	"github.com/spf13/cobra"
@@ -37,14 +40,30 @@ var listVaultsCmd = &cobra.Command{
 			return
 		}
 
-		for _, v := range vaults {
-			if listVaultsPathOnly {
+		if listVaultsPathOnly {
+			for _, v := range vaults {
 				fmt.Println(v.Path)
-			} else {
-				fmt.Printf("%s\t%s\n", v.Name, v.Path)
 			}
+		} else {
+			formatVaultsTable(os.Stdout, vaults)
 		}
 	},
+}
+
+// formatVaultsTable writes vaults as aligned columns using tabwriter,
+// so that the path column lines up regardless of vault name length.
+//
+// Example output:
+//
+//	Notes          /home/user/Notes
+//	LongVaultName  /home/user/LongVaultName
+//	Work           /home/user/Work
+func formatVaultsTable(w io.Writer, vaults []obsidian.VaultInfo) {
+	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
+	for _, v := range vaults {
+		fmt.Fprintf(tw, "%s\t%s\n", v.Name, v.Path)
+	}
+	tw.Flush()
 }
 
 func init() {
