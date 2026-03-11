@@ -50,5 +50,6 @@ var listVaultsCmd = &cobra.Command{
 func init() {
 	listVaultsCmd.Flags().BoolVar(&listVaultsJSON, "json", false, "output as JSON array")
 	listVaultsCmd.Flags().BoolVar(&listVaultsPathOnly, "path-only", false, "output one path per line")
+	listVaultsCmd.MarkFlagsMutuallyExclusive("json", "path-only")
 	rootCmd.AddCommand(listVaultsCmd)
 }
