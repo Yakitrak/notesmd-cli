@@ -77,13 +77,28 @@ If you're running on a headless server or don't have Obsidian installed (e.g., s
    ```json
    {
      "vaults": {
-       "your-vault-name": {
-         "path": "/path/to/your/vault"
+       "any-unique-id": {
+         "path": "/home/user/vaults/my-brain"
        }
      }
    }
    ```
-   Replace `your-vault-name` with whatever name you want to use. For the path, use the **absolute path** — do not use `~` as the CLI does not expand it to your home directory.
+   The key (`any-unique-id`) can be anything — the CLI uses the **directory name** as the vault name (e.g., `my-brain` above). Use the **absolute path** — do not use `~` as the CLI does not expand it to your home directory.
+
+   **Multiple vaults:**
+   ```json
+   {
+     "vaults": {
+       "vault-1": {
+         "path": "/home/user/vaults/personal"
+       },
+       "vault-2": {
+         "path": "/home/user/vaults/work"
+       }
+     }
+   }
+   ```
+   You can then use `notesmd-cli set-default "personal"` or pass `--vault "work"` to target a specific vault.
 
 ---
 
@@ -135,7 +150,7 @@ notesmd-cli set-default --open-type editor
 
 ### Set Default Vault and Open Type
 
-Defines the default vault and/or open type for future usage. If no default vault is set, pass the `--vault` flag with other commands.
+Defines the default vault and/or open type for future usage. If no default vault is set, pass `--vault` with other commands to specify which vault to use.
 
 ```bash
 # Set default vault (vault name only, not the path)
