@@ -61,9 +61,9 @@ var listVaultsCmd = &cobra.Command{
 func formatVaultsTable(w io.Writer, vaults []obsidian.VaultInfo) {
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
 	for _, v := range vaults {
-		fmt.Fprintf(tw, "%s\t%s\n", v.Name, v.Path)
+		_, _ = fmt.Fprintf(tw, "%s\t%s\n", v.Name, v.Path)
 	}
-	tw.Flush()
+	_ = tw.Flush()
 }
 
 func init() {
