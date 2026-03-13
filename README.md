@@ -190,6 +190,21 @@ obs_cd() {
 
 Then you can use `obs_cd` to navigate to the default vault directory within your terminal.
 
+### List Vaults
+
+Lists all registered Obsidian vaults. Alias: `lv`
+
+```bash
+# Lists all vaults (name and path)
+notesmd-cli list-vaults
+
+# Outputs vaults as JSON
+notesmd-cli list-vaults --json
+
+# Outputs only vault paths (useful for scripting)
+notesmd-cli list-vaults --path-only
+```
+
 ### Open Note
 
 Open given note name in Obsidian (or your default editor). Note can also be an absolute path from top level of vault.
