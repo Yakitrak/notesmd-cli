@@ -2,8 +2,10 @@ package obsidian
 
 import (
 	"errors"
-	"github.com/skratchdot/open-golang/open"
 	"net/url"
+	"strings"
+
+	"github.com/skratchdot/open-golang/open"
 )
 
 type Uri struct {
@@ -18,10 +20,11 @@ func (u *Uri) Construct(baseUri string, params map[string]string) string {
 	uri := baseUri
 	for key, value := range params {
 		if value != "" && value != "false" {
+			encoded := strings.ReplaceAll(url.QueryEscape(value), "+", "%20")
 			if uri == baseUri {
-				uri += "?" + key + "=" + url.QueryEscape(value)
+				uri += "?" + key + "=" + encoded
 			} else {
-				uri += "&" + key + "=" + url.QueryEscape(value)
+				uri += "&" + key + "=" + encoded
 			}
 		}
 	}
