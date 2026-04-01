@@ -51,6 +51,105 @@ Or build from source:
 yay -S notesmd-cli
 ```
 
+
+
+### Nix / NixOS
+
+The package is **not** in Nixpkgs as of this writing, but you can install it or try it in a shell as explained below, with or without using flakes, using `buildGoModule`.
+
+<details>
+<summary>With flakes: [...]</summary> 
+   
+Create `flake.nix` file in any directory:
+   
+```nix
+# flake.nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    notesmd-src = {
+      url = "github:Yakitrak/notesmd-cli";
+      flake = false;
+    };
+  };
+
+  outputs = { self, nixpkgs, notesmd-src }:
+    let
+      pkgs = nixpkgs.legacyPackages.x86_64-linux;
+      shortRev =
+        if notesmd-src ? rev
+        then builtins.substring 0 7 notesmd-src.rev
+        else "dirty";
+    in {
+      packages.x86_64-linux.default = pkgs.buildGoModule {
+        pname = "notesmd-cli";
+        version = "rev-${shortRev}";
+        src = notesmd-src;      # pinned by flake.lock
+        vendorHash = null;
+      };
+    };
+}
+```
+
+
+Then, from that directory, you can use the package in different ways, for example:
+
+- **Run** (use `--` so flags go to `notesmd-cli`, not Nix): `nix run .# -- --help`
+- **Build**: `nix build .#` then `./result/bin/notesmd-cli --help`
+- **Develop shell** (CLI on `PATH`): `nix develop` then `notesmd-cli --help`
+
+Any of the above commands will create a `flake.lock` file pinning the current **latest** version. Note that this may not match a stable release.
+
+**Updating**: you can update `flake.lock` to the most recent version by running `nix flake update`.
+
+**Forcing a specific version**: you can force any rev/version by:
+
+```bash
+# force a version number
+nix flake update --override-input notesmd-src github:Yakitrak/notesmd-cli/v0.3.4
+# or a specific commit
+nix flake update --override-input notesmd-src github:Yakitrak/notesmd-cli/b58227d0ffaa06eb7880ba7cd16561111deda79d
+```
+
+</details>
+
+<details>
+<summary>Without flakes: [...]</summary>
+   
+Add a package to `environment.systemPackages` (or use `home.packages` on Home Manager the same way):
+
+```nix
+# configuration.nix
+{ pkgs, lib, ... }:
+
+{ # ...
+  environment.systemPackages = [
+    (pkgs.buildGoModule {
+      pname = "notesmd-cli";
+      version = "0.3.4";
+
+      src = pkgs.fetchFromGitHub {
+        owner = "Yakitrak";
+        repo = "notesmd-cli";
+        rev = "b58227d0ffaa06eb7880ba7cd16561111deda79d"; # commit for v0.3.4
+        hash = "sha256-sZKyXDgDuJI7cFIMQl1w2Ir92HmhZ1Vhz7FUoEkn3Mo="; # hash for v0.3.4
+      };
+      vendorHash = null;
+    })
+  ];
+  # ...
+}
+```
+
+**Updating**: When you change `rev`, you must update `hash` as well, otherwise the build fails. To obtain the 
+correct `hash`, temporarily set `hash = lib.fakeHash;` and run `sudo nixos-rebuild switch`, copy 
+the `sha256-...` value from the error message into your configuration, and rebuild again.
+
+</details>
+
+
+
+
 ### Build from Source
 
 Requires [Go](https://go.dev/dl/) 1.19 or later.
