@@ -53,6 +53,25 @@ func TestFormatVaultsTable(t *testing.T) {
 		assert.Contains(t, output, "/tmp/MyVault")
 	})
 
+	t.Run("Marks default vault", func(t *testing.T) {
+		vaults := []obsidian.VaultInfo{
+			{Name: "Notes", Path: "/home/user/Notes"},
+			{Name: "Work", Path: "/home/user/Work"},
+		}
+
+		var buf bytes.Buffer
+		formatVaultsTable(&buf, vaults, "Work")
+		output := buf.String()
+
+		assert.Contains(t, output, "Work")
+		assert.Contains(t, output, "(default)")
+		// Notes line should not have (default)
+		lines := bytes.Split(bytes.TrimSpace([]byte(output)), []byte("\n"))
+		assert.Len(t, lines, 2)
+		assert.NotContains(t, string(lines[0]), "(default)")
+		assert.Contains(t, string(lines[1]), "(default)")
+	})
+
 	t.Run("Empty vault list produces no output", func(t *testing.T) {
 		var buf bytes.Buffer
 		formatVaultsTable(&buf, []obsidian.VaultInfo{}, "")

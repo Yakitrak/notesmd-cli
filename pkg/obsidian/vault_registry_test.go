@@ -159,8 +159,9 @@ func TestRemoveVault(t *testing.T) {
 		err := os.WriteFile(mockObsidianConfigFile, []byte(configContent), 0644)
 		assert.NoError(t, err)
 
-		err = obsidian.RemoveVault("Personal")
+		name, err := obsidian.RemoveVault("Personal")
 		assert.NoError(t, err)
+		assert.Equal(t, "Personal", name)
 
 		content, err := os.ReadFile(mockObsidianConfigFile)
 		assert.NoError(t, err)
@@ -175,7 +176,7 @@ func TestRemoveVault(t *testing.T) {
 		}
 	})
 
-	t.Run("Removes vault by path", func(t *testing.T) {
+	t.Run("Removes vault by path and returns resolved name", func(t *testing.T) {
 		mockObsidianConfigFile := mocks.CreateMockObsidianConfigFile(t)
 		obsidian.ObsidianConfigFile = func() (string, error) {
 			return mockObsidianConfigFile, nil
@@ -191,8 +192,9 @@ func TestRemoveVault(t *testing.T) {
 		err := os.WriteFile(mockObsidianConfigFile, []byte(configContent), 0644)
 		assert.NoError(t, err)
 
-		err = obsidian.RemoveVault("/Users/user/Documents/Personal")
+		name, err := obsidian.RemoveVault("/Users/user/Documents/Personal")
 		assert.NoError(t, err)
+		assert.Equal(t, "Personal", name)
 
 		content, err := os.ReadFile(mockObsidianConfigFile)
 		assert.NoError(t, err)
@@ -212,7 +214,7 @@ func TestRemoveVault(t *testing.T) {
 		err := os.WriteFile(mockObsidianConfigFile, []byte(`{"vaults":{}}`), 0644)
 		assert.NoError(t, err)
 
-		err = obsidian.RemoveVault("NonExistent")
+		_, err = obsidian.RemoveVault("NonExistent")
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "not found")
 	})

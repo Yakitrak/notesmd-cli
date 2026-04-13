@@ -52,38 +52,40 @@ func AddVault(vaultPath string) error {
 	return writeObsidianConfig(obsidianConfigFile, vaultsConfig)
 }
 
-// RemoveVault removes a vault from the Obsidian config file by name.
-func RemoveVault(name string) error {
+// RemoveVault removes a vault from the Obsidian config file by name or path.
+// Returns the resolved vault name (directory basename) so callers can use it
+// for follow-up operations like clearing the default.
+func RemoveVault(input string) (string, error) {
 	obsidianConfigFile, err := ObsidianConfigFile()
 	if err != nil {
-		return errors.New(ObsidianConfigReadError)
+		return "", errors.New(ObsidianConfigReadError)
 	}
 
 	content, err := os.ReadFile(obsidianConfigFile)
 	if err != nil {
-		return errors.New(ObsidianConfigReadError)
+		return "", errors.New(ObsidianConfigReadError)
 	}
 
 	vaultsConfig := ObsidianVaultConfig{}
 	if json.Unmarshal(content, &vaultsConfig) != nil {
-		return errors.New(ObsidianConfigParseError)
+		return "", errors.New(ObsidianConfigParseError)
 	}
 
-	found := false
+	var resolvedName string
 	for id, v := range vaultsConfig.Vaults {
 		vaultName := filepath.Base(v.Path)
-		if vaultName == name || filepath.Clean(v.Path) == filepath.Clean(name) {
+		if vaultName == input || filepath.Clean(v.Path) == filepath.Clean(input) {
+			resolvedName = vaultName
 			delete(vaultsConfig.Vaults, id)
-			found = true
 			break
 		}
 	}
 
-	if !found {
-		return fmt.Errorf("vault %q not found", name)
+	if resolvedName == "" {
+		return "", fmt.Errorf("vault %q not found", input)
 	}
 
-	return writeObsidianConfig(obsidianConfigFile, vaultsConfig)
+	return resolvedName, writeObsidianConfig(obsidianConfigFile, vaultsConfig)
 }
 
 // ClearDefaultIfMatch clears the default vault in CLI config if it matches the given name.
@@ -107,7 +109,6 @@ func ClearDefaultIfMatch(name string) error {
 		return nil
 	}
 
-	cliConfig.DefaultVaultName = ""
 	v := &Vault{}
 	return v.SetDefaultName("")
 }

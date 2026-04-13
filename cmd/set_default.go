@@ -52,15 +52,15 @@ func runSetDefaultVault(cmd *cobra.Command, args []string) {
 }
 
 var setDefaultVaultCmd = &cobra.Command{
-	Use:   "set-default-vault",
-	Short: "Sets default vault and/or open type",
-	Args:  cobra.RangeArgs(0, 1),
-	Run:   runSetDefaultVault,
+	Use:     "set-default-vault",
+	Aliases: []string{"sd"},
+	Short:   "Sets default vault and/or open type",
+	Args:    cobra.RangeArgs(0, 1),
+	Run:     runSetDefaultVault,
 }
 
 var setDefaultDeprecatedCmd = &cobra.Command{
 	Use:        "set-default",
-	Aliases:    []string{"sd"},
 	Short:      "Sets default vault and/or open type (deprecated: use set-default-vault)",
 	Args:       cobra.RangeArgs(0, 1),
 	Deprecated: "use set-default-vault instead",

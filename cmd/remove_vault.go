@@ -15,9 +15,10 @@ var removeVaultCmd = &cobra.Command{
 	Long:    "Removes a vault from the Obsidian config. Does not delete any files on disk.",
 	Args:    cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		name := args[0]
+		input := args[0]
 
-		if err := obsidian.RemoveVault(name); err != nil {
+		name, err := obsidian.RemoveVault(input)
+		if err != nil {
 			log.Fatal(err)
 		}
 

@@ -92,7 +92,7 @@ func runListVaultsDefault(vaults []obsidian.VaultInfo, defaultName string) {
 	}
 
 	if listVaultsPathOnly {
-		fmt.Print(defaultVault.Path)
+		fmt.Println(defaultVault.Path)
 		return
 	}
 
