@@ -10,6 +10,7 @@ import (
 )
 
 type DailyParams struct {
+	Content   string
 	UseEditor bool
 }
 
@@ -48,17 +49,30 @@ func DailyNote(vault obsidian.VaultManager, uri obsidian.UriManager, params Dail
 	}
 
 	// Read template content if configured.
-	content := ""
+	templateContent := ""
 	if config.Template != "" {
 		templatePath := filepath.Join(vaultPath, obsidian.AddMdSuffix(config.Template))
-		if templateContent, readErr := os.ReadFile(templatePath); readErr == nil {
-			content = string(templateContent)
+		if data, readErr := os.ReadFile(templatePath); readErr == nil {
+			templateContent = string(data)
 		}
 	}
 
-	// WriteNoteFile leaves existing files unchanged (no append/overwrite).
-	if err := WriteNoteFile(notePath, content, false, false); err != nil {
-		return err
+	normalizedContent := NormalizeContent(params.Content)
+
+	_, statErr := os.Stat(notePath)
+	fileExists := statErr == nil
+
+	if fileExists && normalizedContent != "" {
+		// Append user content to existing daily note.
+		if err := WriteNoteFile(notePath, normalizedContent, true, false); err != nil {
+			return err
+		}
+	} else if !fileExists {
+		// Create new daily note with template + content.
+		newContent := templateContent + normalizedContent
+		if err := WriteNoteFile(notePath, newContent, false, false); err != nil {
+			return err
+		}
 	}
 
 	// Open the note.

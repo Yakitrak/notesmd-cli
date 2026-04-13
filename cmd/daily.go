@@ -18,6 +18,7 @@ var DailyCmd = &cobra.Command{
 		uri := obsidian.Uri{}
 
 		err := actions.DailyNote(&vault, &uri, actions.DailyParams{
+			Content:   dailyContent,
 			UseEditor: resolveUseEditor(cmd, &vault),
 		})
 		if err != nil {
@@ -26,8 +27,11 @@ var DailyCmd = &cobra.Command{
 	},
 }
 
+var dailyContent string
+
 func init() {
 	DailyCmd.Flags().StringVarP(&vaultName, "vault", "v", "", "vault name (not required if default is set)")
+	DailyCmd.Flags().StringVarP(&dailyContent, "content", "c", "", "text to add to daily note (appends if note exists)")
 	DailyCmd.Flags().BoolP("editor", "e", false, "open in editor instead of Obsidian")
 	rootCmd.AddCommand(DailyCmd)
 }
