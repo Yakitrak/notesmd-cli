@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Yakitrak/notesmd-cli/pkg/config"
 )
@@ -72,21 +73,44 @@ func RemoveVault(input string) (string, error) {
 		return "", errors.New(ObsidianConfigParseError)
 	}
 
-	var resolvedName string
+	// Exact path match first
+	cleanInput := filepath.Clean(input)
 	for id, v := range vaultsConfig.Vaults {
-		vaultName := filepath.Base(v.Path)
-		if vaultName == input || filepath.Clean(v.Path) == filepath.Clean(input) {
-			resolvedName = vaultName
+		if filepath.Clean(v.Path) == cleanInput {
+			name := filepath.Base(v.Path)
 			delete(vaultsConfig.Vaults, id)
-			break
+			return name, writeObsidianConfig(obsidianConfigFile, vaultsConfig)
 		}
 	}
 
-	if resolvedName == "" {
-		return "", fmt.Errorf("vault %q not found", input)
+	// Name match -- collect all matches to detect ambiguity
+	type match struct {
+		id   string
+		path string
+	}
+	var matches []match
+	for id, v := range vaultsConfig.Vaults {
+		if filepath.Base(v.Path) == input {
+			matches = append(matches, match{id: id, path: v.Path})
+		}
 	}
 
-	return resolvedName, writeObsidianConfig(obsidianConfigFile, vaultsConfig)
+	if len(matches) == 0 {
+		return "", fmt.Errorf("vault %q not found", input)
+	}
+	if len(matches) > 1 {
+		var paths []string
+		for _, m := range matches {
+			paths = append(paths, fmt.Sprintf("  %s", m.path))
+		}
+		return "", fmt.Errorf(
+			"multiple vaults named %q found. Use the full path to disambiguate:\n%s",
+			input, strings.Join(paths, "\n"),
+		)
+	}
+
+	delete(vaultsConfig.Vaults, matches[0].id)
+	return input, writeObsidianConfig(obsidianConfigFile, vaultsConfig)
 }
 
 // ClearDefaultIfMatch clears the default vault in CLI config if it matches the given name.
@@ -127,14 +151,15 @@ func readOrCreateObsidianConfig() (string, ObsidianVaultConfig, error) {
 		content, readErr := os.ReadFile(obsidianConfigFile)
 		if readErr == nil {
 			vaultsConfig := ObsidianVaultConfig{}
-			if json.Unmarshal(content, &vaultsConfig) == nil {
-				if vaultsConfig.Vaults == nil {
-					vaultsConfig.Vaults = make(map[string]struct {
-						Path string `json:"path"`
-					})
-				}
-				return obsidianConfigFile, vaultsConfig, nil
+			if err := json.Unmarshal(content, &vaultsConfig); err != nil {
+				return "", empty, fmt.Errorf("corrupt obsidian config at %s: %w", obsidianConfigFile, err)
 			}
+			if vaultsConfig.Vaults == nil {
+				vaultsConfig.Vaults = make(map[string]struct {
+					Path string `json:"path"`
+				})
+			}
+			return obsidianConfigFile, vaultsConfig, nil
 		}
 	}
 
