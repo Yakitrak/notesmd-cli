@@ -238,6 +238,12 @@ notesmd-cli daily --vault "{vault-name}"
 
 # Creates / opens daily note in your default editor
 notesmd-cli daily --editor
+
+# Adds content to daily note (appends if note already exists)
+notesmd-cli daily --content "abcde"
+
+# Adds content and opens in editor
+notesmd-cli daily --content "abcde" --editor
 ```
 
 ### Search Note

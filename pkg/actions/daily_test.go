@@ -147,6 +147,86 @@ func TestDailyNote(t *testing.T) {
 		assert.Equal(t, uri.ExecuteErr, err)
 	})
 
+	t.Run("Creates daily note with content", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
+		uri := mocks.MockUriManager{}
+
+		err := actions.DailyNote(&vault, &uri, actions.DailyParams{
+			Content: "hello world",
+		})
+		assert.NoError(t, err)
+
+		data, _ := os.ReadFile(filepath.Join(tmpDir, today+".md"))
+		assert.Equal(t, "hello world", string(data))
+	})
+
+	t.Run("Creates daily note with template and content", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		obsDir := filepath.Join(tmpDir, ".obsidian")
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "daily-notes.json"), []byte(`{
+			"template": "Templates/Daily"
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.MkdirAll(filepath.Join(tmpDir, "Templates"), 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(tmpDir, "Templates", "Daily.md"), []byte("# Daily Note\n"), 0644); err != nil {
+			t.Fatal(err)
+		}
+
+		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
+		uri := mocks.MockUriManager{}
+
+		err := actions.DailyNote(&vault, &uri, actions.DailyParams{
+			Content: "- task 1",
+		})
+		assert.NoError(t, err)
+
+		data, _ := os.ReadFile(filepath.Join(tmpDir, today+".md"))
+		assert.Equal(t, "# Daily Note\n- task 1", string(data))
+	})
+
+	t.Run("Appends content to existing daily note", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		notePath := filepath.Join(tmpDir, today+".md")
+		if err := os.WriteFile(notePath, []byte("existing content"), 0644); err != nil {
+			t.Fatal(err)
+		}
+
+		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
+		uri := mocks.MockUriManager{}
+
+		err := actions.DailyNote(&vault, &uri, actions.DailyParams{
+			Content: "\\nnew line",
+		})
+		assert.NoError(t, err)
+
+		data, _ := os.ReadFile(notePath)
+		assert.Equal(t, "existing content\nnew line", string(data))
+	})
+
+	t.Run("Does not modify existing daily note without content", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		notePath := filepath.Join(tmpDir, today+".md")
+		if err := os.WriteFile(notePath, []byte("existing content"), 0644); err != nil {
+			t.Fatal(err)
+		}
+
+		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
+		uri := mocks.MockUriManager{}
+
+		err := actions.DailyNote(&vault, &uri, actions.DailyParams{})
+		assert.NoError(t, err)
+
+		data, _ := os.ReadFile(notePath)
+		assert.Equal(t, "existing content", string(data))
+	})
+
 	t.Run("Creates daily note with custom format", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		obsDir := filepath.Join(tmpDir, ".obsidian")
