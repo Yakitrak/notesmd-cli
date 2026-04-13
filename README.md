@@ -4,6 +4,40 @@
 
 ---
 
+## Table of Contents
+
+- [Description](#description)
+- [Install](#install)
+  - [Windows](#windows)
+  - [Mac and Linux](#mac-and-linux)
+  - [Arch Linux (AUR)](#arch-linux-aur)
+  - [Build from Source](#build-from-source)
+  - [Headless / No Obsidian Installed](#headless--no-obsidian-installed)
+- [Migrating from Obsidian CLI](#migrating-from-obsidian-cli)
+- [Usage](#usage)
+  - [Help](#help)
+  - [Editor Flag](#editor-flag)
+  - [Add Vault](#add-vault)
+  - [Remove Vault](#remove-vault)
+  - [List Vaults](#list-vaults)
+  - [Set Default Vault and Open Type](#set-default-vault-and-open-type)
+  - [Open Note](#open-note)
+  - [Daily Note](#daily-note)
+  - [Search Note](#search-note)
+  - [Search Note Content](#search-note-content)
+  - [List Vault Contents](#list-vault-contents)
+  - [Print Note](#print-note)
+  - [Create / Update Note](#create--update-note)
+  - [Move / Rename Note](#move--rename-note)
+  - [Delete Note](#delete-note)
+  - [Frontmatter](#frontmatter)
+- [Deprecated Commands](#deprecated-commands)
+- [Excluded Files](#excluded-files)
+- [Contribution](#contribution)
+- [License](#license)
+
+---
+
 ## ![notesmd-cli Usage](./docs/usage.png)
 
 ## Description
