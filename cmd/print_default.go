@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 	"github.com/spf13/cobra"
@@ -35,9 +34,9 @@ var printDefaultDeprecatedCmd = &cobra.Command{
 
 		openType, _ := vault.DefaultOpenType()
 
-		fmt.Fprintln(os.Stdout, "Default vault name:", name)
-		fmt.Fprintln(os.Stdout, "Default vault path:", path)
-		fmt.Fprintln(os.Stdout, "Default open type:", openType)
+		fmt.Println("Default vault name:", name)
+		fmt.Println("Default vault path:", path)
+		fmt.Println("Default open type:", openType)
 	},
 }
 

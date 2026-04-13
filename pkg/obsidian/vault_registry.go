@@ -90,17 +90,17 @@ func RemoveVault(name string) error {
 func ClearDefaultIfMatch(name string) error {
 	_, cliConfigFile, err := CliConfigPath()
 	if err != nil {
-		return nil // no config, nothing to clear
+		return nil //nolint:nilerr // no config dir means nothing to clear
 	}
 
 	content, err := os.ReadFile(cliConfigFile)
 	if err != nil {
-		return nil // no config file, nothing to clear
+		return nil //nolint:nilerr // no config file means nothing to clear
 	}
 
 	cliConfig := CliConfig{}
-	if json.Unmarshal(content, &cliConfig) != nil {
-		return nil
+	if err := json.Unmarshal(content, &cliConfig); err != nil {
+		return nil //nolint:nilerr // unparseable config means nothing to clear
 	}
 
 	if cliConfig.DefaultVaultName != name {
