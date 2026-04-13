@@ -31,8 +31,9 @@ func TestAddVault(t *testing.T) {
 		assert.NoError(t, err)
 
 		vaultDir := t.TempDir()
-		err = obsidian.AddVault(vaultDir)
+		absPath, err := obsidian.AddVault(vaultDir)
 		assert.NoError(t, err)
+		assert.Equal(t, vaultDir, absPath)
 
 		// Verify vault was added
 		content, err := os.ReadFile(mockObsidianConfigFile)
@@ -57,7 +58,7 @@ func TestAddVault(t *testing.T) {
 		err := os.WriteFile(mockObsidianConfigFile, []byte(`{"vaults":{}}`), 0644)
 		assert.NoError(t, err)
 
-		err = obsidian.AddVault("/nonexistent/path/to/vault")
+		_, err = obsidian.AddVault("/nonexistent/path/to/vault")
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "path does not exist")
 	})
@@ -75,7 +76,7 @@ func TestAddVault(t *testing.T) {
 		err = os.WriteFile(tmpFile, []byte("test"), 0644)
 		assert.NoError(t, err)
 
-		err = obsidian.AddVault(tmpFile)
+		_, err = obsidian.AddVault(tmpFile)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "not a directory")
 	})
@@ -97,7 +98,7 @@ func TestAddVault(t *testing.T) {
 		err := os.WriteFile(mockObsidianConfigFile, []byte(configContent), 0644)
 		assert.NoError(t, err)
 
-		err = obsidian.AddVault(vaultDir)
+		_, err = obsidian.AddVault(vaultDir)
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "already registered")
 	})
@@ -114,10 +115,10 @@ func TestAddVault(t *testing.T) {
 		vault1 := t.TempDir()
 		vault2 := t.TempDir()
 
-		err = obsidian.AddVault(vault1)
+		_, err = obsidian.AddVault(vault1)
 		assert.NoError(t, err)
 
-		err = obsidian.AddVault(vault2)
+		_, err = obsidian.AddVault(vault2)
 		assert.NoError(t, err)
 
 		content, err := os.ReadFile(mockObsidianConfigFile)

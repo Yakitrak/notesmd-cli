@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 	"github.com/spf13/cobra"
@@ -25,7 +26,7 @@ var removeVaultCmd = &cobra.Command{
 		fmt.Printf("Vault %q removed\n", name)
 
 		if err := obsidian.ClearDefaultIfMatch(name); err != nil {
-			fmt.Println("Warning: could not clear default vault:", err)
+			fmt.Fprintln(os.Stderr, "Warning: could not clear default vault:", err)
 		}
 	},
 }

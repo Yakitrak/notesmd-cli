@@ -14,42 +14,43 @@ import (
 
 // AddVault registers a vault path in the Obsidian config file.
 // It creates the config file and directory if they don't exist.
-func AddVault(vaultPath string) error {
+// Returns the resolved absolute path on success.
+func AddVault(vaultPath string) (string, error) {
 	absPath, err := filepath.Abs(vaultPath)
 	if err != nil {
-		return fmt.Errorf("failed to resolve path: %w", err)
+		return "", fmt.Errorf("failed to resolve path: %w", err)
 	}
 
 	info, err := os.Stat(absPath)
 	if err != nil {
-		return fmt.Errorf("path does not exist: %s", absPath)
+		return "", fmt.Errorf("path does not exist: %s", absPath)
 	}
 	if !info.IsDir() {
-		return fmt.Errorf("path is not a directory: %s", absPath)
+		return "", fmt.Errorf("path is not a directory: %s", absPath)
 	}
 
 	obsidianConfigFile, vaultsConfig, err := readOrCreateObsidianConfig()
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	// Check if vault already registered
 	for _, v := range vaultsConfig.Vaults {
 		if filepath.Clean(v.Path) == filepath.Clean(absPath) {
-			return fmt.Errorf("vault already registered: %s", absPath)
+			return "", fmt.Errorf("vault already registered: %s", absPath)
 		}
 	}
 
 	id, err := generateVaultID()
 	if err != nil {
-		return fmt.Errorf("failed to generate vault ID: %w", err)
+		return "", fmt.Errorf("failed to generate vault ID: %w", err)
 	}
 
 	vaultsConfig.Vaults[id] = struct {
 		Path string `json:"path"`
 	}{Path: absPath}
 
-	return writeObsidianConfig(obsidianConfigFile, vaultsConfig)
+	return absPath, writeObsidianConfig(obsidianConfigFile, vaultsConfig)
 }
 
 // RemoveVault removes a vault from the Obsidian config file by name or path.
