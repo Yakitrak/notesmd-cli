@@ -64,7 +64,7 @@ sudo install -m 755 notesmd-cli /usr/local/bin/
 
 ### Headless / No Obsidian Installed
 
-If you're running on a headless server or don't have Obsidian installed (e.g., server environments, containers, or systems without a GUI), you can still use this CLI. When Obsidian is installed, it registers vaults automatically -- for headless environments you register them via the CLI instead.
+If you're running on a headless server or don't have Obsidian installed (e.g., server environments, containers, or systems without a GUI), you can still use this CLI. When Obsidian is installed, it registers vaults automatically. For headless environments, you register them via the CLI instead.
 
 **Setup Instructions:**
 
@@ -106,7 +106,7 @@ You can then pass `--vault "work"` to target a specific vault.
      }
    }
    ```
-   The key (`any-unique-id`) can be anything -- the CLI uses the **directory name** as the vault name (e.g., `my-brain` above). Use the **absolute path** -- do not use `~` as the CLI does not expand it to your home directory.
+   The key (`any-unique-id`) can be anything. The CLI uses the **directory name** as the vault name (e.g., `my-brain` above). Use the **absolute path**. Do not use `~` as the CLI does not expand it to your home directory.
 
 </details>
 
@@ -162,7 +162,7 @@ notesmd-cli set-default-vault --open-type editor
 
 Registers a directory as an Obsidian vault. Creates the Obsidian config file (`~/.config/obsidian/obsidian.json`) if it does not exist. Alias: `av`
 
-If you have Obsidian installed, vaults are registered automatically when you open them -- you only need this command for headless setups or environments where Obsidian is not installed (servers, containers, CI).
+If you have Obsidian installed, vaults are registered automatically when you open them. You only need this command for headless setups or environments where Obsidian is not installed (servers, containers, CI).
 
 ```bash
 # Register a vault
