@@ -3,18 +3,21 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
 	"github.com/spf13/cobra"
 )
 
-var printPathOnly bool
-var printDefaultCmd = &cobra.Command{
-	Use:     "print-default",
-	Aliases: []string{"pd"},
-	Short:   "prints default vault name and path",
-	Args:    cobra.ExactArgs(0),
+var printDefaultDeprecatedCmd = &cobra.Command{
+	Use:        "print-default",
+	Aliases:    []string{"pd"},
+	Short:      "prints default vault name and path (deprecated: use list-vaults --default)",
+	Args:       cobra.ExactArgs(0),
+	Deprecated: "use list-vaults --default instead",
 	Run: func(cmd *cobra.Command, args []string) {
+		pathOnly, _ := cmd.Flags().GetBool("path-only")
+
 		vault := obsidian.Vault{}
 		name, err := vault.DefaultName()
 		if err != nil {
@@ -25,20 +28,20 @@ var printDefaultCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		if printPathOnly {
+		if pathOnly {
 			fmt.Print(path)
 			return
 		}
 
 		openType, _ := vault.DefaultOpenType()
 
-		fmt.Println("Default vault name:", name)
-		fmt.Println("Default vault path:", path)
-		fmt.Println("Default open type:", openType)
+		fmt.Fprintln(os.Stdout, "Default vault name:", name)
+		fmt.Fprintln(os.Stdout, "Default vault path:", path)
+		fmt.Fprintln(os.Stdout, "Default open type:", openType)
 	},
 }
 
 func init() {
-	printDefaultCmd.Flags().BoolVar(&printPathOnly, "path-only", false, "print only the vault path")
-	rootCmd.AddCommand(printDefaultCmd)
+	printDefaultDeprecatedCmd.Flags().Bool("path-only", false, "print only the vault path")
+	rootCmd.AddCommand(printDefaultDeprecatedCmd)
 }

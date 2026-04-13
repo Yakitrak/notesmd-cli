@@ -17,7 +17,7 @@ func TestFormatVaultsTable(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		formatVaultsTable(&buf, vaults)
+		formatVaultsTable(&buf, vaults, "")
 		output := buf.String()
 
 		// All path columns should start at the same position
@@ -46,7 +46,7 @@ func TestFormatVaultsTable(t *testing.T) {
 		}
 
 		var buf bytes.Buffer
-		formatVaultsTable(&buf, vaults)
+		formatVaultsTable(&buf, vaults, "")
 		output := buf.String()
 
 		assert.Contains(t, output, "MyVault")
@@ -55,7 +55,7 @@ func TestFormatVaultsTable(t *testing.T) {
 
 	t.Run("Empty vault list produces no output", func(t *testing.T) {
 		var buf bytes.Buffer
-		formatVaultsTable(&buf, []obsidian.VaultInfo{})
+		formatVaultsTable(&buf, []obsidian.VaultInfo{}, "")
 
 		assert.Empty(t, buf.String())
 	})

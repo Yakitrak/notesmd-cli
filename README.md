@@ -62,11 +62,34 @@ go build -o notesmd-cli .
 sudo install -m 755 notesmd-cli /usr/local/bin/
 ```
 
-### Headless / No Obsidian Installed 
+### Headless / No Obsidian Installed
 
-If you're running on a headless server or don't have Obsidian installed (e.g., server environments, containers, or systems without a GUI), you can still use this CLI. Obsidian requires a GUI, so this section explains how to set up the required configuration manually.
+If you're running on a headless server or don't have Obsidian installed (e.g., server environments, containers, or systems without a GUI), you can still use this CLI. When Obsidian is installed, it registers vaults automatically -- for headless environments you register them via the CLI instead.
 
 **Setup Instructions:**
+
+```bash
+# Register your vault directory
+notesmd-cli add-vault /home/user/vaults/my-brain
+
+# Set it as default
+notesmd-cli set-default-vault "my-brain"
+
+# Or do both in one step
+notesmd-cli add-vault /home/user/vaults/my-brain --set-default
+```
+
+For multiple vaults:
+```bash
+notesmd-cli add-vault /home/user/vaults/personal
+notesmd-cli add-vault /home/user/vaults/work
+notesmd-cli set-default-vault "personal"
+```
+
+You can then pass `--vault "work"` to target a specific vault.
+
+<details>
+<summary>Manual setup (without CLI commands)</summary>
 
 1. Create the Obsidian config directory:
    ```bash
@@ -83,22 +106,9 @@ If you're running on a headless server or don't have Obsidian installed (e.g., s
      }
    }
    ```
-   The key (`any-unique-id`) can be anything — the CLI uses the **directory name** as the vault name (e.g., `my-brain` above). Use the **absolute path** — do not use `~` as the CLI does not expand it to your home directory.
+   The key (`any-unique-id`) can be anything -- the CLI uses the **directory name** as the vault name (e.g., `my-brain` above). Use the **absolute path** -- do not use `~` as the CLI does not expand it to your home directory.
 
-   **Multiple vaults:**
-   ```json
-   {
-     "vaults": {
-       "vault-1": {
-         "path": "/home/user/vaults/personal"
-       },
-       "vault-2": {
-         "path": "/home/user/vaults/work"
-       }
-     }
-   }
-   ```
-   You can then use `notesmd-cli set-default "personal"` or pass `--vault "work"` to target a specific vault.
+</details>
 
 ---
 
@@ -145,57 +155,41 @@ notesmd-cli move "old.md" "new.md" --open --editor
 To avoid passing `--editor` every time, configure it as the default open type once:
 
 ```bash
-notesmd-cli set-default --open-type editor
+notesmd-cli set-default-vault --open-type editor
 ```
 
-### Set Default Vault and Open Type
+### Add Vault
 
-Defines the default vault and/or open type for future usage. If no default vault is set, pass `--vault` with other commands to specify which vault to use.
+Registers a directory as an Obsidian vault. Creates the Obsidian config file (`~/.config/obsidian/obsidian.json`) if it does not exist. Alias: `av`
+
+If you have Obsidian installed, vaults are registered automatically when you open them -- you only need this command for headless setups or environments where Obsidian is not installed (servers, containers, CI).
 
 ```bash
-# Set default vault (vault name only, not the path)
-notesmd-cli set-default "{vault-name}"
+# Register a vault
+notesmd-cli add-vault /path/to/vault
 
-# Set default open type: 'obsidian' (default) or 'editor'
-notesmd-cli set-default --open-type editor
-
-# Set both at once
-notesmd-cli set-default "{vault-name}" --open-type editor
+# Register and set as default
+notesmd-cli add-vault /path/to/vault --set-default
 ```
 
-When `default_open_type` is set to `editor`, commands that support `--open` will open notes in `$EDITOR` automatically, without needing to pass `--editor` each time.
+### Remove Vault
 
-Note: `open` and other commands in `notesmd-cli` use this vault's base directory as the working directory, not the current working directory of your terminal.
-
-### Print Default Vault
-
-Prints default vault and path. Please set this with `set-default` command if not set.
+Removes a vault from the Obsidian config. Does not delete any files on disk. If the removed vault was the default, the default is cleared. Alias: `rv`
 
 ```bash
-# print the default vault name and path
-notesmd-cli print-default
+# Remove by vault name
+notesmd-cli remove-vault "{vault-name}"
 
-# print only the vault path
-notesmd-cli print-default --path-only
+# Remove by vault path
+notesmd-cli remove-vault /path/to/vault
 ```
-
-You can add this to your shell configuration file (like `~/.zshrc`) to quickly navigate to the default vault:
-
-```bash
-obs_cd() {
-    local result=$(notesmd-cli print-default --path-only)
-    [ -n "$result" ] && cd -- "$result"
-}
-```
-
-Then you can use `obs_cd` to navigate to the default vault directory within your terminal.
 
 ### List Vaults
 
-Lists all registered Obsidian vaults. Alias: `lv`
+Lists all registered Obsidian vaults. The default vault is marked with `(default)`. Alias: `lv`
 
 ```bash
-# Lists all vaults (name and path)
+# Lists all vaults (name and path, default marked)
 notesmd-cli list-vaults
 
 # Outputs vaults as JSON
@@ -203,7 +197,43 @@ notesmd-cli list-vaults --json
 
 # Outputs only vault paths (useful for scripting)
 notesmd-cli list-vaults --path-only
+
+# Show only the default vault (name, path, open type)
+notesmd-cli list-vaults --default
+
+# Get just the default vault path (useful for scripting)
+notesmd-cli list-vaults --default --path-only
 ```
+
+You can add this to your shell configuration file (like `~/.zshrc`) to quickly navigate to the default vault:
+
+```bash
+obs_cd() {
+    local result=$(notesmd-cli list-vaults --default --path-only)
+    [ -n "$result" ] && cd -- "$result"
+}
+```
+
+Then you can use `obs_cd` to navigate to the default vault directory within your terminal.
+
+### Set Default Vault and Open Type
+
+Defines the default vault and/or open type for future usage. If no default vault is set, pass `--vault` with other commands to specify which vault to use.
+
+```bash
+# Set default vault (vault name only, not the path)
+notesmd-cli set-default-vault "{vault-name}"
+
+# Set default open type: 'obsidian' (default) or 'editor'
+notesmd-cli set-default-vault --open-type editor
+
+# Set both at once
+notesmd-cli set-default-vault "{vault-name}" --open-type editor
+```
+
+When `default_open_type` is set to `editor`, commands that support `--open` will open notes in `$EDITOR` automatically, without needing to pass `--editor` each time.
+
+Note: `open` and other commands in `notesmd-cli` use this vault's base directory as the working directory, not the current working directory of your terminal.
 
 ### Open Note
 
@@ -393,6 +423,16 @@ notesmd-cli frontmatter "{note-name}" --delete --key "draft"
 # Use with a specific vault
 notesmd-cli frontmatter "{note-name}" --print --vault "{vault-name}"
 ```
+
+## Deprecated Commands
+
+The following commands still work but print a deprecation warning to stderr (so pipes and scripts are unaffected). They will be removed in the next major version.
+
+| Old command | Replacement |
+|---|---|
+| `set-default` | `set-default-vault` |
+| `print-default` | `list-vaults --default` |
+| `print-default --path-only` | `list-vaults --default --path-only` |
 
 ## Excluded Files
 
