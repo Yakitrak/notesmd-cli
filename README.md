@@ -1,6 +1,6 @@
 # NotesMD CLI
 
-> **Note**: With the release of the official Obsidian CLI., this project has been renamed from "Obsidian CLI" to "NotesMD CLI" to avoid confusion. NotesMD CLI works **without requiring Obsidian to be running**, making it perfect for scripting, automation, and terminal-only environments.
+> **Note**: With the release of the official Obsidian CLI, this project has been renamed from "Obsidian CLI" to "NotesMD CLI" to avoid confusion. NotesMD CLI works **without requiring Obsidian to be running**, making it perfect for scripting, automation, and terminal-only environments.
 
 ---
 
@@ -255,7 +255,7 @@ Then you can use `obs_cd` to navigate to the default vault directory within your
 Defines the default vault and/or open type for future usage. If no default vault is set, pass `--vault` with other commands to specify which vault to use.
 
 ```bash
-# Set default vault (vault name only, not the path)
+# Set default vault (by name or path)
 notesmd-cli set-default-vault "{vault-name}"
 
 # Set default open type: 'obsidian' (default) or 'editor'
@@ -291,7 +291,7 @@ notesmd-cli open "{note-name}" --editor
 
 ### Daily Note
 
-Creates or opens today's daily note directly on disk — **Obsidian does not need to be running**. If `.obsidian/daily-notes.json` exists in the vault, the CLI reads `folder`, `format` (Moment.js date format, default `YYYY-MM-DD`), and `template` from it. A template file's content is used when creating a new daily note. If the config is missing or unreadable, defaults are used (vault root, `YYYY-MM-DD`, no template).
+Creates or opens today's daily note directly on disk. **Obsidian does not need to be running**. If `.obsidian/daily-notes.json` exists in the vault, the CLI reads `folder`, `format` (Moment.js date format, default `YYYY-MM-DD`), and `template` from it. A template file's content is used when creating a new daily note. If the config is missing or unreadable, defaults are used (vault root, `YYYY-MM-DD`, no template).
 
 ```bash
 # Creates / opens daily note in obsidian vault
@@ -382,7 +382,7 @@ notesmd-cli print "{note-name}" --vault "{vault-name}"
 
 ### Create / Update Note
 
-Creates a note (can also be a path with name) directly on disk — **Obsidian does not need to be running**. If the note already exists and neither `--overwrite` nor `--append` is passed, the file is left unchanged. Intermediate directories are created automatically.
+Creates a note (can also be a path with name) directly on disk. **Obsidian does not need to be running**. If the note already exists and neither `--overwrite` nor `--append` is passed, the file is left unchanged. Intermediate directories are created automatically.
 
 When the note name has no explicit path (no `/`), the CLI reads `.obsidian/app.json` from the vault to check for a configured default folder (`newFileLocation: "folder"` and `newFileFolderPath`). If configured, the note is placed in that folder. If the config is missing or unreadable, the note is created at the vault root.
 
@@ -433,10 +433,10 @@ notesmd-cli move "{current-note-path}" "{new-note-path}" --open --editor
 Deletes a given note (path from top level of vault).
 
 ```bash
-# Renames a note in default obsidian
+# Deletes a note in default vault
 notesmd-cli delete "{note-path}"
 
-# Renames a note in given obsidian
+# Deletes a note in specified vault
 notesmd-cli delete "{note-path}" --vault "{vault-name}"
 ```
 
@@ -470,10 +470,10 @@ The following commands still work but print a deprecation warning to stderr (so 
 
 ## Excluded Files
 
-The CLI respects Obsidian's **Excluded Files** setting (`Settings → Files & Links → Excluded Files`).
+The CLI respects Obsidian's **Excluded Files** setting (`Settings > Files & Links > Excluded Files`).
 
-- `search` — excluded notes won't appear in the fuzzy finder
-- `search-content` — excluded folders won't be searched
+- `search` - excluded notes won't appear in the fuzzy finder
+- `search-content` - excluded folders won't be searched
 
 All other commands (`open`, `move`, `print`, `frontmatter`, etc.) still access excluded files as they refer to notes by name.
 
