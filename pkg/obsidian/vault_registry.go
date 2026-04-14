@@ -73,10 +73,10 @@ func RemoveVault(input string) (string, error) {
 		return "", errors.New(ObsidianConfigParseError)
 	}
 
-	// Exact path match first
-	cleanInput := filepath.Clean(input)
+	// Exact path match first (resolve to absolute for consistency with AddVault)
+	absInput, _ := filepath.Abs(input)
 	for id, v := range vaultsConfig.Vaults {
-		if filepath.Clean(v.Path) == cleanInput {
+		if filepath.Clean(v.Path) == filepath.Clean(absInput) {
 			name := filepath.Base(v.Path)
 			delete(vaultsConfig.Vaults, id)
 			return name, writeObsidianConfig(obsidianConfigFile, vaultsConfig)

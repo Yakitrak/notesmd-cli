@@ -10,7 +10,7 @@ import (
 )
 
 var removeVaultCmd = &cobra.Command{
-	Use:     "remove-vault <name>",
+	Use:     "remove-vault <name|path>",
 	Aliases: []string{"rv"},
 	Short:   "Unregister a vault",
 	Long:    "Removes a vault from the Obsidian config. Does not delete any files on disk.",
