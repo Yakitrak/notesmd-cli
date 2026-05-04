@@ -346,6 +346,9 @@ notesmd-cli search-content "search term" --no-interactive
 # Prints JSON for scripts (implies non-interactive mode)
 notesmd-cli search-content "search term" --format json
 
+# Paginated results (default page size: 25, max: 100)
+notesmd-cli search-content "search term" --format json --page 1 --page-size 50
+
 ```
 
 ### List Vault Contents
