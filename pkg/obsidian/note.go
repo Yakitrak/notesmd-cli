@@ -184,6 +184,9 @@ func (m *Note) GetNotesList(vaultPath string) ([]string, error) {
 		if err != nil {
 			return err
 		}
+		if d.IsDir() && d.Name() != "." && strings.HasPrefix(d.Name(), ".") {
+			return filepath.SkipDir
+		}
 		relPath, err := filepath.Rel(vaultPath, path)
 		if err != nil {
 			return err
@@ -213,6 +216,9 @@ func (m *Note) SearchNotesWithSnippets(vaultPath string, query string) ([]NoteMa
 	err := filepath.WalkDir(vaultPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+		if d.IsDir() && d.Name() != "." && strings.HasPrefix(d.Name(), ".") {
+			return filepath.SkipDir
 		}
 		relPath, relErr := filepath.Rel(vaultPath, path)
 		if relErr != nil {
@@ -352,6 +358,9 @@ func (m *Note) FindBacklinks(vaultPath, noteName string) ([]NoteMatch, error) {
 	err := filepath.WalkDir(vaultPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+		if d.IsDir() && d.Name() != "." && strings.HasPrefix(d.Name(), ".") {
+			return filepath.SkipDir
 		}
 
 		relPath, err := filepath.Rel(vaultPath, path)
