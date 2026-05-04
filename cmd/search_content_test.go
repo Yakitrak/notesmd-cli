@@ -57,6 +57,8 @@ func newSearchContentOptionsTestCmd() *cobra.Command {
 	c.Flags().BoolP("editor", "e", false, "")
 	c.Flags().Bool("no-interactive", false, "")
 	c.Flags().String("format", "text", "")
+	c.Flags().Int("page", 0, "")
+	c.Flags().Int("page-size", 0, "")
 	return c
 }
 
@@ -65,8 +67,12 @@ func TestSearchContentCommandFlagsWired(t *testing.T) {
 	assert.NotNil(t, searchContentCmd.Flags().Lookup("format"))
 	assert.NotNil(t, searchContentCmd.Flags().Lookup("editor"))
 	assert.NotNil(t, searchContentCmd.Flags().Lookup("vault"))
+	assert.NotNil(t, searchContentCmd.Flags().Lookup("page"))
+	assert.NotNil(t, searchContentCmd.Flags().Lookup("page-size"))
 
 	assert.Equal(t, "text", searchContentCmd.Flags().Lookup("format").DefValue)
+	assert.Equal(t, "0", searchContentCmd.Flags().Lookup("page").DefValue)
+	assert.Equal(t, "0", searchContentCmd.Flags().Lookup("page-size").DefValue)
 	assert.Contains(t, searchContentCmd.Aliases, "sc")
 }
 

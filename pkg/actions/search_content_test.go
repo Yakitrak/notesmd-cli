@@ -354,4 +354,92 @@ func TestSearchNotesContent(t *testing.T) {
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "invalid format")
 	})
+
+	t.Run("JSON pagination wraps results in envelope", func(t *testing.T) {
+		vault := mocks.MockVaultOperator{Name: "myVault"}
+		uri := mocks.MockUriManager{}
+		note := mocks.MockNoteManager{}
+		fuzzyFinder := mocks.MockFuzzyFinder{}
+		output := &bytes.Buffer{}
+
+		options := defaultOptions(output)
+		options.Format = "json"
+		options.NoInteractive = true
+		options.Page = 1
+		options.PageSize = 1
+
+		err := actions.SearchNotesContentWithOptions(&vault, &note, &uri, &fuzzyFinder, "test", options)
+		assert.NoError(t, err)
+
+		var result map[string]interface{}
+		decodeErr := json.Unmarshal(output.Bytes(), &result)
+		assert.NoError(t, decodeErr)
+		assert.Equal(t, float64(1), result["page"])
+		assert.Equal(t, float64(1), result["page_size"])
+		assert.Equal(t, float64(2), result["total_results"])
+		assert.Equal(t, float64(1), result["returned_results"])
+		assert.Equal(t, true, result["has_more"])
+		assert.Len(t, result["results"], 1)
+	})
+
+	t.Run("JSON pagination page 2", func(t *testing.T) {
+		vault := mocks.MockVaultOperator{Name: "myVault"}
+		uri := mocks.MockUriManager{}
+		note := mocks.MockNoteManager{}
+		fuzzyFinder := mocks.MockFuzzyFinder{}
+		output := &bytes.Buffer{}
+
+		options := defaultOptions(output)
+		options.Format = "json"
+		options.NoInteractive = true
+		options.Page = 2
+		options.PageSize = 1
+
+		err := actions.SearchNotesContentWithOptions(&vault, &note, &uri, &fuzzyFinder, "test", options)
+		assert.NoError(t, err)
+
+		var result map[string]interface{}
+		decodeErr := json.Unmarshal(output.Bytes(), &result)
+		assert.NoError(t, decodeErr)
+		assert.Equal(t, float64(2), result["page"])
+		assert.Equal(t, false, result["has_more"])
+		assert.Len(t, result["results"], 1)
+	})
+
+	t.Run("Text pagination appends footer", func(t *testing.T) {
+		vault := mocks.MockVaultOperator{Name: "myVault"}
+		uri := mocks.MockUriManager{}
+		note := mocks.MockNoteManager{}
+		fuzzyFinder := mocks.MockFuzzyFinder{}
+		output := &bytes.Buffer{}
+
+		options := defaultOptions(output)
+		options.NoInteractive = true
+		options.Page = 1
+		options.PageSize = 1
+
+		err := actions.SearchNotesContentWithOptions(&vault, &note, &uri, &fuzzyFinder, "test", options)
+		assert.NoError(t, err)
+		assert.Contains(t, output.String(), "-- Page 1/2 (1 of 2 results) --")
+	})
+
+	t.Run("Without pagination flags JSON output is flat array", func(t *testing.T) {
+		vault := mocks.MockVaultOperator{Name: "myVault"}
+		uri := mocks.MockUriManager{}
+		note := mocks.MockNoteManager{}
+		fuzzyFinder := mocks.MockFuzzyFinder{}
+		output := &bytes.Buffer{}
+
+		options := defaultOptions(output)
+		options.Format = "json"
+		options.NoInteractive = true
+
+		err := actions.SearchNotesContentWithOptions(&vault, &note, &uri, &fuzzyFinder, "test", options)
+		assert.NoError(t, err)
+
+		var result []searchContentJSONMatch
+		decodeErr := json.Unmarshal(output.Bytes(), &result)
+		assert.NoError(t, decodeErr)
+		assert.Len(t, result, 2)
+	})
 }

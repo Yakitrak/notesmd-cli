@@ -45,6 +45,16 @@ func buildSearchContentOptions(cmd *cobra.Command, vault obsidian.VaultManager, 
 		return actions.SearchContentOptions{}, err
 	}
 
+	page, err := cmd.Flags().GetInt("page")
+	if err != nil {
+		return actions.SearchContentOptions{}, err
+	}
+
+	pageSize, err := cmd.Flags().GetInt("page-size")
+	if err != nil {
+		return actions.SearchContentOptions{}, err
+	}
+
 	useEditor := resolveUseEditor(cmd, vault)
 
 	return actions.SearchContentOptions{
@@ -54,6 +64,8 @@ func buildSearchContentOptions(cmd *cobra.Command, vault obsidian.VaultManager, 
 		Format:              format,
 		InteractiveTerminal: interactiveTerminal,
 		Output:              os.Stdout,
+		Page:                page,
+		PageSize:            pageSize,
 	}, nil
 }
 
@@ -66,5 +78,7 @@ func init() {
 	searchContentCmd.Flags().BoolP("editor", "e", false, "open in editor instead of Obsidian")
 	searchContentCmd.Flags().Bool("no-interactive", false, "disable interactive selection and print results to stdout")
 	searchContentCmd.Flags().String("format", "text", "output format for non-interactive mode: text|json")
+	searchContentCmd.Flags().Int("page", 0, "page number for paginated results (enables pagination)")
+	searchContentCmd.Flags().Int("page-size", 0, "results per page, max 100 (default 25 when pagination is enabled)")
 	rootCmd.AddCommand(searchContentCmd)
 }
