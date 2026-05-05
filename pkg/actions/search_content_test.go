@@ -435,4 +435,73 @@ func TestSearchNotesContent(t *testing.T) {
 		assert.NoError(t, decodeErr)
 		assert.Len(t, result, 2)
 	})
+
+	t.Run("Out-of-range page is clamped to last page", func(t *testing.T) {
+		vault := mocks.MockVaultOperator{Name: "myVault"}
+		uri := mocks.MockUriManager{}
+		note := mocks.MockNoteManager{}
+		fuzzyFinder := mocks.MockFuzzyFinder{}
+		output := &bytes.Buffer{}
+
+		options := defaultOptions(output)
+		options.Format = "json"
+		options.NoInteractive = true
+		options.Page = 999
+		options.PageSize = 25
+
+		err := actions.SearchNotesContentWithOptions(&vault, &note, &uri, &fuzzyFinder, "test", options)
+		assert.NoError(t, err)
+
+		var result map[string]any
+		decodeErr := json.Unmarshal(output.Bytes(), &result)
+		assert.NoError(t, decodeErr)
+		assert.Equal(t, float64(1), result["page"])
+		assert.Equal(t, float64(2), result["returned_results"])
+		assert.Equal(t, false, result["has_more"])
+	})
+
+	t.Run("Page-size only defaults to page 1", func(t *testing.T) {
+		vault := mocks.MockVaultOperator{Name: "myVault"}
+		uri := mocks.MockUriManager{}
+		note := mocks.MockNoteManager{}
+		fuzzyFinder := mocks.MockFuzzyFinder{}
+		output := &bytes.Buffer{}
+
+		options := defaultOptions(output)
+		options.Format = "json"
+		options.PageSize = 1
+
+		err := actions.SearchNotesContentWithOptions(&vault, &note, &uri, &fuzzyFinder, "test", options)
+		assert.NoError(t, err)
+
+		var result map[string]any
+		decodeErr := json.Unmarshal(output.Bytes(), &result)
+		assert.NoError(t, decodeErr)
+		assert.Equal(t, float64(1), result["page"])
+		assert.Equal(t, float64(1), result["returned_results"])
+		assert.Equal(t, true, result["has_more"])
+	})
+
+	t.Run("Pagination flags imply non-interactive mode", func(t *testing.T) {
+		vault := mocks.MockVaultOperator{Name: "myVault"}
+		uri := mocks.MockUriManager{}
+		note := mocks.MockNoteManager{}
+		fuzzyFinder := mocks.MockFuzzyFinder{}
+		output := &bytes.Buffer{}
+
+		options := defaultOptions(output)
+		options.Format = "json"
+		options.InteractiveTerminal = true
+		options.Page = 1
+		options.PageSize = 10
+
+		err := actions.SearchNotesContentWithOptions(&vault, &note, &uri, &fuzzyFinder, "test", options)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, uri.ExecuteCalls)
+
+		var result map[string]any
+		decodeErr := json.Unmarshal(output.Bytes(), &result)
+		assert.NoError(t, decodeErr)
+		assert.NotNil(t, result["page"])
+	})
 }

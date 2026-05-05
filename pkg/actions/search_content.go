@@ -150,6 +150,9 @@ func shouldUseNonInteractiveMode(options SearchContentOptions, format string) bo
 	if format == searchContentFormatJSON {
 		return true
 	}
+	if isPaginationRequested(options) {
+		return true
+	}
 	return !options.InteractiveTerminal
 }
 
@@ -167,7 +170,15 @@ func normalizeSearchContentFormat(format string) (string, error) {
 	}
 }
 
-func paginateMatches(matches []obsidian.NoteMatch, options SearchContentOptions) ([]obsidian.NoteMatch, int, int, bool) {
+type paginationResult struct {
+	items      []obsidian.NoteMatch
+	page       int
+	pageSize   int
+	totalPages int
+	hasMore    bool
+}
+
+func paginateMatches(matches []obsidian.NoteMatch, options SearchContentOptions) paginationResult {
 	page := options.Page
 	pageSize := options.PageSize
 
@@ -192,17 +203,36 @@ func paginateMatches(matches []obsidian.NoteMatch, options SearchContentOptions)
 
 	start := (page - 1) * pageSize
 	if start >= total {
-		return nil, page, pageSize, false
+		return paginationResult{page: page, pageSize: pageSize, totalPages: totalPages}
 	}
 	end := start + pageSize
 	if end > total {
 		end = total
 	}
-	return matches[start:end], page, pageSize, end < total
+	return paginationResult{
+		items:      matches[start:end],
+		page:       page,
+		pageSize:   pageSize,
+		totalPages: totalPages,
+		hasMore:    end < total,
+	}
 }
 
 func isPaginationRequested(options SearchContentOptions) bool {
 	return options.Page > 0 || options.PageSize > 0
+}
+
+func toJSONMatches(matches []obsidian.NoteMatch) []searchContentJSONMatch {
+	result := make([]searchContentJSONMatch, 0, len(matches))
+	for _, match := range matches {
+		result = append(result, searchContentJSONMatch{
+			File:      match.FilePath,
+			Line:      match.LineNumber,
+			Content:   match.MatchLine,
+			MatchType: getMatchType(match),
+		})
+	}
+	return result
 }
 
 func printMatches(matches []obsidian.NoteMatch, searchTerm string, format string, output io.Writer, options SearchContentOptions) error {
@@ -216,13 +246,11 @@ func printMatches(matches []obsidian.NoteMatch, searchTerm string, format string
 		}
 
 		if paginate {
-			pageMatches, page, pageSize, _ := paginateMatches(matches, options)
-			for _, match := range pageMatches {
+			pg := paginateMatches(matches, options)
+			for _, match := range pg.items {
 				_, _ = fmt.Fprintln(output, formatMatchForList(match))
 			}
-			total := len(matches)
-			totalPages := (total + pageSize - 1) / pageSize
-			_, _ = fmt.Fprintf(output, "-- Page %d/%d (%d of %d results) --\n", page, totalPages, len(pageMatches), total)
+			_, _ = fmt.Fprintf(output, "-- Page %d/%d (%d of %d results) --\n", pg.page, pg.totalPages, len(pg.items), len(matches))
 			return nil
 		}
 
@@ -232,41 +260,23 @@ func printMatches(matches []obsidian.NoteMatch, searchTerm string, format string
 		return nil
 	case searchContentFormatJSON:
 		if paginate {
-			pageMatches, page, pageSize, hasMore := paginateMatches(matches, options)
-			result := make([]searchContentJSONMatch, 0, len(pageMatches))
-			for _, match := range pageMatches {
-				result = append(result, searchContentJSONMatch{
-					File:      match.FilePath,
-					Line:      match.LineNumber,
-					Content:   match.MatchLine,
-					MatchType: getMatchType(match),
-				})
-			}
-			paginated := searchContentPaginatedJSON{
-				Page:            page,
-				PageSize:        pageSize,
-				TotalResults:    len(matches),
-				ReturnedResults: len(result),
-				HasMore:         hasMore,
-				Results:         result,
-			}
+			pg := paginateMatches(matches, options)
+			result := toJSONMatches(pg.items)
 			encoder := json.NewEncoder(output)
 			encoder.SetEscapeHTML(false)
-			return encoder.Encode(paginated)
-		}
-
-		result := make([]searchContentJSONMatch, 0, len(matches))
-		for _, match := range matches {
-			result = append(result, searchContentJSONMatch{
-				File:      match.FilePath,
-				Line:      match.LineNumber,
-				Content:   match.MatchLine,
-				MatchType: getMatchType(match),
+			return encoder.Encode(searchContentPaginatedJSON{
+				Page:            pg.page,
+				PageSize:        pg.pageSize,
+				TotalResults:    len(matches),
+				ReturnedResults: len(result),
+				HasMore:         pg.hasMore,
+				Results:         result,
 			})
 		}
+
 		encoder := json.NewEncoder(output)
 		encoder.SetEscapeHTML(false)
-		return encoder.Encode(result)
+		return encoder.Encode(toJSONMatches(matches))
 	default:
 		return fmt.Errorf("unsupported output format: %s", format)
 	}
