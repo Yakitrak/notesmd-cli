@@ -182,6 +182,14 @@ func paginateMatches(matches []obsidian.NoteMatch, options SearchContentOptions)
 	}
 
 	total := len(matches)
+	totalPages := (total + pageSize - 1) / pageSize
+	if totalPages == 0 {
+		totalPages = 1
+	}
+	if page > totalPages {
+		page = totalPages
+	}
+
 	start := (page - 1) * pageSize
 	if start >= total {
 		return nil, page, pageSize, false
@@ -207,22 +215,18 @@ func printMatches(matches []obsidian.NoteMatch, searchTerm string, format string
 			return nil
 		}
 
-		displayMatches := matches
 		if paginate {
-			var page, pageSize int
-			var hasMore bool
-			displayMatches, page, pageSize, hasMore = paginateMatches(matches, options)
-			_ = hasMore
-			for _, match := range displayMatches {
+			pageMatches, page, pageSize, _ := paginateMatches(matches, options)
+			for _, match := range pageMatches {
 				_, _ = fmt.Fprintln(output, formatMatchForList(match))
 			}
 			total := len(matches)
 			totalPages := (total + pageSize - 1) / pageSize
-			_, _ = fmt.Fprintf(output, "-- Page %d/%d (%d of %d results) --\n", page, totalPages, len(displayMatches), total)
+			_, _ = fmt.Fprintf(output, "-- Page %d/%d (%d of %d results) --\n", page, totalPages, len(pageMatches), total)
 			return nil
 		}
 
-		for _, match := range displayMatches {
+		for _, match := range matches {
 			_, _ = fmt.Fprintln(output, formatMatchForList(match))
 		}
 		return nil

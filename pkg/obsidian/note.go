@@ -12,7 +12,10 @@ import (
 	"strings"
 )
 
-type Note struct {
+type Note struct{}
+
+func isHiddenDir(d fs.DirEntry) bool {
+	return d.IsDir() && d.Name() != "." && strings.HasPrefix(d.Name(), ".")
 }
 
 type NoteMatch struct {
@@ -184,7 +187,7 @@ func (m *Note) GetNotesList(vaultPath string) ([]string, error) {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() && d.Name() != "." && strings.HasPrefix(d.Name(), ".") {
+		if isHiddenDir(d) {
 			return filepath.SkipDir
 		}
 		relPath, err := filepath.Rel(vaultPath, path)
@@ -217,7 +220,7 @@ func (m *Note) SearchNotesWithSnippets(vaultPath string, query string) ([]NoteMa
 		if err != nil {
 			return err
 		}
-		if d.IsDir() && d.Name() != "." && strings.HasPrefix(d.Name(), ".") {
+		if isHiddenDir(d) {
 			return filepath.SkipDir
 		}
 		relPath, relErr := filepath.Rel(vaultPath, path)
@@ -359,7 +362,7 @@ func (m *Note) FindBacklinks(vaultPath, noteName string) ([]NoteMatch, error) {
 		if err != nil {
 			return err
 		}
-		if d.IsDir() && d.Name() != "." && strings.HasPrefix(d.Name(), ".") {
+		if isHiddenDir(d) {
 			return filepath.SkipDir
 		}
 

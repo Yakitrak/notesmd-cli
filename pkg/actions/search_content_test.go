@@ -33,13 +33,6 @@ func (m *CustomMockNoteForSingleMatch) FindBacklinks(string, string) ([]obsidian
 	return nil, nil
 }
 
-type searchContentJSONMatch struct {
-	File      string `json:"file"`
-	Line      int    `json:"line"`
-	Content   string `json:"content"`
-	MatchType string `json:"match_type"`
-}
-
 func defaultOptions(output *bytes.Buffer) actions.SearchContentOptions {
 	return actions.SearchContentOptions{
 		Format:              "text",
@@ -264,14 +257,14 @@ func TestSearchNotesContent(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, 0, uri.ExecuteCalls)
 
-		var result []searchContentJSONMatch
+		var result []map[string]any
 		decodeErr := json.Unmarshal(output.Bytes(), &result)
 		assert.NoError(t, decodeErr)
 		assert.Len(t, result, 2)
-		assert.Equal(t, "note1.md", result[0].File)
-		assert.Equal(t, 5, result[0].Line)
-		assert.Equal(t, "example match line", result[0].Content)
-		assert.Equal(t, "content", result[0].MatchType)
+		assert.Equal(t, "note1.md", result[0]["file"])
+		assert.Equal(t, float64(5), result[0]["line"])
+		assert.Equal(t, "example match line", result[0]["content"])
+		assert.Equal(t, "content", result[0]["match_type"])
 	})
 
 	t.Run("JSON format with no matches prints empty array", func(t *testing.T) {
@@ -371,7 +364,7 @@ func TestSearchNotesContent(t *testing.T) {
 		err := actions.SearchNotesContentWithOptions(&vault, &note, &uri, &fuzzyFinder, "test", options)
 		assert.NoError(t, err)
 
-		var result map[string]interface{}
+		var result map[string]any
 		decodeErr := json.Unmarshal(output.Bytes(), &result)
 		assert.NoError(t, decodeErr)
 		assert.Equal(t, float64(1), result["page"])
@@ -398,7 +391,7 @@ func TestSearchNotesContent(t *testing.T) {
 		err := actions.SearchNotesContentWithOptions(&vault, &note, &uri, &fuzzyFinder, "test", options)
 		assert.NoError(t, err)
 
-		var result map[string]interface{}
+		var result map[string]any
 		decodeErr := json.Unmarshal(output.Bytes(), &result)
 		assert.NoError(t, decodeErr)
 		assert.Equal(t, float64(2), result["page"])
@@ -437,7 +430,7 @@ func TestSearchNotesContent(t *testing.T) {
 		err := actions.SearchNotesContentWithOptions(&vault, &note, &uri, &fuzzyFinder, "test", options)
 		assert.NoError(t, err)
 
-		var result []searchContentJSONMatch
+		var result []map[string]any
 		decodeErr := json.Unmarshal(output.Bytes(), &result)
 		assert.NoError(t, decodeErr)
 		assert.Len(t, result, 2)
