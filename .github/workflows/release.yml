@@ -52,3 +52,14 @@ jobs:
           # GITHUB_TOKEN cannot trigger other workflow runs.
           GITHUB_TOKEN: ${{ secrets.PUBLISHER_TOKEN }}
           AUR_KEY: ${{ secrets.AUR_KEY }}
+      - name: Remove redundant version from Homebrew formula
+        run: |
+          git clone https://x-access-token:${{ secrets.PUBLISHER_TOKEN }}@github.com/Yakitrak/homebrew-yakitrak.git /tmp/tap
+          cd /tmp/tap
+          sed -i '/^  version ".*"$/d' notesmd-cli.rb
+          git diff --quiet && exit 0
+          git config user.name "kartikayjainwal"
+          git config user.email "kartikayjainwal@gmail.com"
+          git add -A
+          git commit -m "fix: remove redundant version from notesmd-cli formula"
+          git push
