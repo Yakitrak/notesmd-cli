@@ -295,7 +295,7 @@ notesmd-cli open "{note-name}" --editor
 
 ### Daily Note
 
-Creates or opens today's daily note directly on disk. **Obsidian does not need to be running**. If `.obsidian/daily-notes.json` exists in the vault, the CLI reads `folder`, `format` (Moment.js date format, default `YYYY-MM-DD`), and `template` from it. A template file's content is used when creating a new daily note. If the config is missing or unreadable, defaults are used (vault root, `YYYY-MM-DD`, no template).
+Creates or opens today's daily note directly on disk. **Obsidian does not need to be running**. If `.obsidian/daily-notes.json` exists in the vault, the CLI reads `folder`, `format` (Moment.js date format, default `YYYY-MM-DD`), and `template` from it. A template file's content is used when creating a new daily note, with `{{date}}`, `{{title}}`, `{{time}}` and `{{date:FORMAT}}` filled in as Obsidian does. If the config is missing or unreadable, defaults are used (vault root, `YYYY-MM-DD`, no template).
 
 ```bash
 # Creates / opens daily note in obsidian vault
