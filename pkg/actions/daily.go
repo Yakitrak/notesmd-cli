@@ -3,7 +3,10 @@ package actions
 import (
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Yakitrak/notesmd-cli/pkg/obsidian"
@@ -32,7 +35,9 @@ func DailyNote(vault obsidian.VaultManager, uri obsidian.UriManager, params Dail
 	if format == "" {
 		format = "YYYY-MM-DD"
 	}
-	noteName := time.Now().Format(obsidian.MomentToGoFormat(format))
+	now := time.Now()
+	noteName := now.Format(obsidian.MomentToGoFormat(format))
+	title := path.Base(noteName)
 
 	// Prepend configured daily notes folder.
 	if config.Folder != "" {
@@ -53,7 +58,7 @@ func DailyNote(vault obsidian.VaultManager, uri obsidian.UriManager, params Dail
 	if config.Template != "" {
 		templatePath := filepath.Join(vaultPath, obsidian.AddMdSuffix(config.Template))
 		if data, readErr := os.ReadFile(templatePath); readErr == nil {
-			templateContent = string(data)
+			templateContent = expandTemplate(string(data), title, now)
 		}
 	}
 
@@ -85,4 +90,25 @@ func DailyNote(vault obsidian.VaultManager, uri obsidian.UriManager, params Dail
 		"file":  noteName,
 	})
 	return uri.Execute(obsidianUri)
+}
+
+var templateVariable = regexp.MustCompile(`(?i){{\s*(date|time|title)\s*(?::(.+?))?\s*}}`)
+
+// expandTemplate fills the variables Obsidian's daily notes plugin supports:
+// {{date}} and {{title}} are the note name, {{time}} is HH:mm, {{date:FORMAT}} and {{time:FORMAT}} use a Moment.js format.
+func expandTemplate(template, title string, now time.Time) string {
+	return templateVariable.ReplaceAllStringFunc(template, func(match string) string {
+		groups := templateVariable.FindStringSubmatch(match)
+		name, format := strings.ToLower(groups[1]), groups[2]
+		switch {
+		case name == "title":
+			return title
+		case format != "":
+			return now.Format(obsidian.MomentToGoFormat(format))
+		case name == "time":
+			return now.Format("15:04")
+		default:
+			return title
+		}
+	})
 }
