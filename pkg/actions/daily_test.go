@@ -76,6 +76,34 @@ func TestDailyNote(t *testing.T) {
 		assert.Equal(t, "# Daily Note\n- [ ] Task", string(content))
 	})
 
+	t.Run("Fills template variables", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		obsDir := filepath.Join(tmpDir, ".obsidian")
+		if err := os.MkdirAll(filepath.Join(tmpDir, "Templates"), 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.MkdirAll(obsDir, 0755); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(obsDir, "daily-notes.json"), []byte(`{
+			"template": "Templates/Daily"
+		}`), 0644); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(filepath.Join(tmpDir, "Templates", "Daily.md"), []byte("# {{date}} {{title}}\nyear: {{date:YYYY}}"), 0644); err != nil {
+			t.Fatal(err)
+		}
+
+		vault := mocks.MockVaultOperator{Name: "myVault", PathValue: tmpDir}
+		uri := mocks.MockUriManager{}
+
+		err := actions.DailyNote(&vault, &uri, actions.DailyParams{})
+		assert.NoError(t, err)
+
+		content, _ := os.ReadFile(filepath.Join(tmpDir, today+".md"))
+		assert.Equal(t, "# "+today+" "+today+"\nyear: "+time.Now().Format("2006"), string(content))
+	})
+
 	t.Run("Does not overwrite existing daily note", func(t *testing.T) {
 		tmpDir := t.TempDir()
 		notePath := filepath.Join(tmpDir, today+".md")
