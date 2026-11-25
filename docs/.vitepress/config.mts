@@ -14,7 +14,7 @@ export default defineConfig({
 
     nav: [
       { text: 'Guide', link: '/guide/installation' },
-      { text: 'Commands', link: '/commands/vault' },
+      { text: 'Commands', link: '/commands/create' },
       {
         text: 'v0.3.9',
         items: [
@@ -46,13 +46,17 @@ export default defineConfig({
         {
           text: 'Commands',
           items: [
-            { text: 'Vault Management', link: '/commands/vault' },
-            { text: 'Create & Update', link: '/commands/create' },
-            { text: 'Open & Print', link: '/commands/open' },
-            { text: 'Move & Delete', link: '/commands/move' },
-            { text: 'Search', link: '/commands/search' },
-            { text: 'Daily Notes', link: '/commands/daily' },
-            { text: 'Frontmatter', link: '/commands/frontmatter' },
+            { text: 'vault management', link: '/commands/vault' },
+            { text: 'create', link: '/commands/create' },
+            { text: 'open', link: '/commands/open' },
+            { text: 'print', link: '/commands/print' },
+            { text: 'list', link: '/commands/list' },
+            { text: 'move', link: '/commands/move' },
+            { text: 'delete', link: '/commands/delete' },
+            { text: 'search', link: '/commands/search-name' },
+            { text: 'search-content', link: '/commands/search-content' },
+            { text: 'daily', link: '/commands/daily' },
+            { text: 'frontmatter', link: '/commands/frontmatter' },
           ],
         },
       ],

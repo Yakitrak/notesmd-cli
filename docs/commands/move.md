@@ -1,6 +1,4 @@
-# Move & Delete
-
-## move
+# move
 
 Moves or renames a note and updates every link in the vault that points to it — wikilinks, markdown links, and percent-encoded paths (e.g. `My%20Note.md`). Intermediate destination directories are created automatically.
 
@@ -20,16 +18,4 @@ notesmd-cli move "{current-note-path}" "{new-note-path}" --open
 
 # Move and open in your editor
 notesmd-cli move "{current-note-path}" "{new-note-path}" --open --editor
-```
-
-## delete
-
-Deletes a note from the vault.
-
-```bash
-# Delete from the default vault
-notesmd-cli delete "{note-path}"
-
-# Delete from a specific vault
-notesmd-cli delete "{note-path}" --vault "{vault-name}"
 ```
