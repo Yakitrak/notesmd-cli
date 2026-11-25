@@ -17,3 +17,8 @@ notesmd-cli
 .DS_Store
 bin/
 .idea/
+
+# VitePress
+docs/.vitepress/dist
+docs/.vitepress/cache
+docs/node_modules
