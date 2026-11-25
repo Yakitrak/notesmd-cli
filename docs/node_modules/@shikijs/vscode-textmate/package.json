@@ -1,0 +1,46 @@
+{
+  "name": "@shikijs/vscode-textmate",
+  "version": "10.1.0",
+  "type": "module",
+  "description": "Shiki's fork of `vscode-textmate`",
+  "author": {
+    "name": "Microsoft Corporation"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shikijs/vscode-textmate"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/shikijs/vscode-textmate/issues"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^26.6.5",
+    "bumpp": "^12.3.0",
+    "mocha": "^12.0.3",
+    "tsup": "^9.0.0",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "vscode-oniguruma": "^2.0.1"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "mocha --ui=tdd ./src/tests/all.test.ts",
+    "benchmark": "tsx benchmark/benchmark.js",
+    "inspect": "tsx src/tests/inspect.ts",
+    "typecheck": "tsc --noEmit",
+    "tmconvert": "node scripts/tmconvert.js",
+    "version": "pnpm build && pnpm test",
+    "postversion": "git push && git push --tags",
+    "release": "bumpp && pnpm publish"
+  }
+}
