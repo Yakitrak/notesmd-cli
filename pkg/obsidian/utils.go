@@ -120,6 +120,14 @@ func GenerateLinkReplacements(oldNotePath, newNotePath string) map[string]string
 	replacements["](./"+oldMd+")"] = "](./" + newMd + ")"
 	replacements["](./"+oldPathNoExt+")"] = "](./" + newPathNoExt + ")"
 
+	// Obsidian writes spaces in markdown links as %20: [text](folder/My%20Note.md)
+	if strings.Contains(oldMd, " ") {
+		oldEncoded := strings.ReplaceAll(oldMd, " ", "%20")
+		newEncoded := strings.ReplaceAll(newMd, " ", "%20")
+		replacements["]("+oldEncoded+")"] = "](" + newEncoded + ")"
+		replacements["](./"+oldEncoded+")"] = "](./" + newEncoded + ")"
+	}
+
 	return replacements
 }
 

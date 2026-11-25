@@ -135,6 +135,14 @@ func TestGenerateLinkReplacements(t *testing.T) {
 		assert.Equal(t, "](folder/renamed.md)", replacements["](folder/note.md)"])
 	})
 
+	t.Run("Note name with spaces", func(t *testing.T) {
+		replacements := obsidian.GenerateLinkReplacements("folder/Two Words", "folder/Three Words")
+
+		// Obsidian writes spaces in markdown links as %20
+		assert.Equal(t, "](folder/Three%20Words.md)", replacements["](folder/Two%20Words.md)"])
+		assert.Equal(t, "](./folder/Three%20Words.md)", replacements["](./folder/Two%20Words.md)"])
+	})
+
 	t.Run("Nested path", func(t *testing.T) {
 		replacements := obsidian.GenerateLinkReplacements("a/b/c/note", "x/y/note")
 
