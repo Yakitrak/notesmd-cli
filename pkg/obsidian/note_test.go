@@ -231,6 +231,26 @@ func TestMoveNote(t *testing.T) {
 		assert.Equal(t, originalContent, string(newContent), "New file content is %q, expected %q", string(newContent), originalContent)
 	})
 
+	t.Run("Move onto an existing note leaves both notes alone", func(t *testing.T) {
+		tempDir := t.TempDir()
+		ideas := filepath.Join(tempDir, "Ideas.md")
+		plan := filepath.Join(tempDir, "Plan.md")
+		if err := os.WriteFile(ideas, []byte("ideas"), 0644); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(plan, []byte("plan"), 0644); err != nil {
+			t.Fatal(err)
+		}
+
+		err := (&obsidian.Note{}).Move(filepath.Join(tempDir, "Ideas"), filepath.Join(tempDir, "Plan"))
+
+		assert.EqualError(t, err, obsidian.NoteAlreadyExistsError)
+		got, _ := os.ReadFile(plan)
+		assert.Equal(t, "plan", string(got))
+		_, err = os.Stat(ideas)
+		assert.NoError(t, err)
+	})
+
 	t.Run("Missing note does not create destination directory", func(t *testing.T) {
 		// Arrange
 		tempDir := t.TempDir()
