@@ -41,8 +41,15 @@ func (m *Note) Move(originalPath string, newPath string) error {
 
 	// Check the source first so a missing note is reported as such and does not
 	// leave behind a destination directory created below.
-	if _, err := os.Stat(o); err != nil {
+	src, err := os.Stat(o)
+	if err != nil {
 		return errors.New(NoteDoesNotExistError)
+	}
+
+	// os.Rename replaces an existing file; refuse instead of deleting that note.
+	// The same file is allowed so a case-only rename still works.
+	if dst, err := os.Stat(n); err == nil && !os.SameFile(src, dst) {
+		return errors.New(NoteAlreadyExistsError)
 	}
 
 	// Create any intermediate directories the destination requires, as create
