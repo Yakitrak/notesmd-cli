@@ -2,6 +2,8 @@
 
 > **Note**: With the release of the official Obsidian CLI, this project has been renamed from "Obsidian CLI" to "NotesMD CLI" to avoid confusion. NotesMD CLI works **without requiring Obsidian to be running**, making it perfect for scripting, automation, and terminal-only environments.
 
+**[Documentation](https://yakitrak.github.io/notesmd-cli/)**
+
 ---
 
 ## Table of Contents
