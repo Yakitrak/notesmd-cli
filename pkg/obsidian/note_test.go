@@ -925,3 +925,37 @@ func TestFindBacklinks(t *testing.T) {
 		assert.Contains(t, matches[0].FilePath, "nested.md")
 	})
 }
+
+func TestUpdateNoteLinks_ShortestAndRelativeMarkdownLinks(t *testing.T) {
+	t.Run("Update markdown links by shortest path and relative to the linking note", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		assert.NoError(t, os.MkdirAll(filepath.Join(tmpDir, "Daily"), 0755))
+
+		content := []byte("[short](Spec.md) [rel](../Projects/Spec.md) [rel spaces](../Projects/My%20Spec.md)")
+		testFile := filepath.Join(tmpDir, "Daily", "today.md")
+		assert.NoError(t, os.WriteFile(testFile, content, 0644))
+
+		noteManager := obsidian.Note{}
+		assert.NoError(t, noteManager.UpdateLinks(tmpDir, "Projects/Spec", "Archive/Specification"))
+		assert.NoError(t, noteManager.UpdateLinks(tmpDir, "Projects/My Spec", "Archive/My Spec"))
+
+		newContent, _ := os.ReadFile(testFile)
+		assert.Equal(t, "[short](Specification.md) [rel](../Archive/Specification.md) [rel spaces](../Archive/My%20Spec.md)", string(newContent))
+	})
+}
+
+func TestUpdateNoteLinks_BareNameKeepsLocalNote(t *testing.T) {
+	t.Run("A bare markdown link to a note in the linking note's folder is left alone", func(t *testing.T) {
+		tmpDir := t.TempDir()
+		assert.NoError(t, os.MkdirAll(filepath.Join(tmpDir, "b"), 0755))
+		assert.NoError(t, os.WriteFile(filepath.Join(tmpDir, "b", "README.md"), []byte("# b"), 0644))
+		index := filepath.Join(tmpDir, "b", "index.md")
+		assert.NoError(t, os.WriteFile(index, []byte("[readme](README.md)"), 0644))
+
+		noteManager := obsidian.Note{}
+		assert.NoError(t, noteManager.UpdateLinks(tmpDir, "a/README", "a/OVERVIEW"))
+
+		newContent, _ := os.ReadFile(index)
+		assert.Equal(t, "[readme](README.md)", string(newContent))
+	})
+}
