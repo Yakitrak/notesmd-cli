@@ -179,6 +179,22 @@ func (m *Note) UpdateLinks(vaultPath string, oldNoteName string, newNoteName str
 		}
 
 		replacements := GenerateLinkReplacements(oldNoteName, newNoteName)
+
+		// Obsidian also writes markdown links relative to the linking note
+		// ([x](../Folder/Note.md)) and by shortest path ([x](Note.md))
+		if fileDir, err := filepath.Rel(vaultPath, filepath.Dir(path)); err == nil {
+			oldRel, errOld := filepath.Rel(fileDir, oldNoteName)
+			newRel, errNew := filepath.Rel(fileDir, newNoteName)
+			if errOld == nil && errNew == nil {
+				AddMarkdownLinkReplacements(replacements, filepath.ToSlash(oldRel), filepath.ToSlash(newRel))
+			}
+		}
+		// A bare name means a note in the linking note's own folder when one is there
+		oldBase := filepath.Base(oldNoteName)
+		if _, err := os.Stat(filepath.Join(filepath.Dir(path), AddMdSuffix(oldBase))); err != nil {
+			AddMarkdownLinkReplacements(replacements, oldBase, filepath.Base(newNoteName))
+		}
+
 		updatedContent := ReplaceContent(originalContent, replacements)
 
 		if bytes.Equal(originalContent, updatedContent) {

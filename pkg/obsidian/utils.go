@@ -131,6 +131,25 @@ func GenerateLinkReplacements(oldNotePath, newNotePath string) map[string]string
 	return replacements
 }
 
+// AddMarkdownLinkReplacements maps the markdown link target oldTarget to newTarget,
+// with and without .md and with spaces written as %20. Targets already mapped are kept.
+func AddMarkdownLinkReplacements(replacements map[string]string, oldTarget string, newTarget string) {
+	add := func(o, n string) {
+		if _, ok := replacements["]("+o+")"]; !ok {
+			replacements["]("+o+")"] = "](" + n + ")"
+		}
+	}
+	for _, pair := range [][2]string{
+		{AddMdSuffix(oldTarget), AddMdSuffix(newTarget)},
+		{RemoveMdSuffix(oldTarget), RemoveMdSuffix(newTarget)},
+	} {
+		add(pair[0], pair[1])
+		if strings.Contains(pair[0], " ") {
+			add(strings.ReplaceAll(pair[0], " ", "%20"), strings.ReplaceAll(pair[1], " ", "%20"))
+		}
+	}
+}
+
 func ReplaceContent(content []byte, replacements map[string]string) []byte {
 	for o, n := range replacements {
 		content = bytes.ReplaceAll(content, []byte(o), []byte(n))
