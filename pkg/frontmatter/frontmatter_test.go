@@ -170,3 +170,39 @@ func TestDeleteKey(t *testing.T) {
 		assert.Contains(t, result, "title: Test")
 	})
 }
+
+func TestEditKeepsOtherProperties(t *testing.T) {
+	content := "---\ncountry: NO\nvisa needed: no # answered\noptions: [y, n, on, off]\nversion: 1.10\nzip: 02134\n---\nBody"
+
+	t.Run("SetKey", func(t *testing.T) {
+		result, err := frontmatter.SetKey(content, "status", "done")
+		assert.NoError(t, err)
+		assert.Equal(t, "---\ncountry: NO\nvisa needed: no # answered\noptions: [y, n, on, off]\nversion: 1.10\nzip: 02134\nstatus: done\n---\nBody", result)
+	})
+
+	t.Run("DeleteKey", func(t *testing.T) {
+		result, err := frontmatter.DeleteKey(content, "zip")
+		assert.NoError(t, err)
+		assert.Equal(t, "---\ncountry: NO\nvisa needed: no # answered\noptions: [y, n, on, off]\nversion: 1.10\n---\nBody", result)
+	})
+}
+
+func TestEditEdgeCases(t *testing.T) {
+	t.Run("SetKey keeps the line comment of the replaced value", func(t *testing.T) {
+		result, err := frontmatter.SetKey("---\ntitle: a # note\n---\nBody", "title", "b")
+		assert.NoError(t, err)
+		assert.Equal(t, "---\ntitle: b # note\n---\nBody", result)
+	})
+
+	t.Run("SetKey replaces duplicated keys", func(t *testing.T) {
+		result, err := frontmatter.SetKey("---\ntitle: a\ntitle: b\n---\nBody", "title", "c")
+		assert.NoError(t, err)
+		assert.Equal(t, "---\ntitle: c\n---\nBody", result)
+	})
+
+	t.Run("DeleteKey keeps aliases to the deleted value valid", func(t *testing.T) {
+		result, err := frontmatter.DeleteKey("---\nbase: &b x\ncopy: *b\n---\nBody", "base")
+		assert.NoError(t, err)
+		assert.Equal(t, "---\ncopy: x\n---\nBody", result)
+	})
+}
